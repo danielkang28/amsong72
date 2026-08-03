@@ -1,0 +1,629 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>72구절 암송 시험</title>
+<style>
+:root{
+  --bg:#F6F7F4; --surface:#FFFFFF; --surface2:#EEF1EC; --ink:#22282B; --muted:#5F6A64;
+  --accent:#1E5748; --accent-ink:#FFFFFF; --accent-soft:#DDE9E2; --line:#DDE2DC;
+  --good:#1E6E3C; --good-soft:#DFF0E3; --bad:#A93D2B; --bad-soft:#F6E3DE; --warn:#6F5518; --warn-soft:#F3EBD6;
+  --font-ui:-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+  --font-verse:'Noto Serif KR','Nanum Myeongjo','AppleMyungjo','Batang',ui-serif,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#141A18; --surface:#1C2422; --surface2:#232D2A; --ink:#E6ECE8; --muted:#9AA8A0;
+    --accent:#6FBFA3; --accent-ink:#0F1F1A; --accent-soft:#24463C; --line:#2E3A36;
+    --good:#7CC98F; --good-soft:#1F3A28; --bad:#E08A76; --bad-soft:#42241D; --warn:#D9B863; --warn-soft:#3A301F;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141A18; --surface:#1C2422; --surface2:#232D2A; --ink:#E6ECE8; --muted:#9AA8A0;
+  --accent:#6FBFA3; --accent-ink:#0F1F1A; --accent-soft:#24463C; --line:#2E3A36;
+  --good:#7CC98F; --good-soft:#1F3A28; --bad:#E08A76; --bad-soft:#42241D; --warn:#D9B863; --warn-soft:#3A301F;
+}
+:root[data-theme="light"]{
+  --bg:#F6F7F4; --surface:#FFFFFF; --surface2:#EEF1EC; --ink:#22282B; --muted:#5F6A64;
+  --accent:#1E5748; --accent-ink:#FFFFFF; --accent-soft:#DDE9E2; --line:#DDE2DC;
+  --good:#1E6E3C; --good-soft:#DFF0E3; --bad:#A93D2B; --bad-soft:#F6E3DE; --warn:#6F5518; --warn-soft:#F3EBD6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 64px}
+header.app{padding:20px 0 4px}
+.brand{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.brand h1{font-size:1.15rem;margin:0;letter-spacing:-.01em}
+.brand .town{color:var(--muted);font-size:.9rem}
+.weekcard{background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:18px 20px;margin:14px 0 6px}
+.weekcard .wk{font-size:2rem;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+.weekcard .theme{font-size:1.05rem;font-weight:600;margin-top:2px}
+.weekcard .range{opacity:.85;font-size:.85rem;margin-top:6px}
+.notice{font-size:.85rem;color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:8px 12px;margin:8px 0}
+nav.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:12px;margin:14px 0;position:sticky;top:8px;z-index:5}
+nav.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:.85rem;font-weight:600;padding:9px 2px;border-radius:9px;cursor:pointer}
+nav.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+section.panel{display:none}
+section.panel.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.card h2{font-size:1rem;margin:0 0 10px}
+.card h3{font-size:.92rem;margin:14px 0 6px}
+.label{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:10px 0 4px;text-transform:uppercase}
+input[type=text],textarea,select{width:100%;font-family:inherit;font-size:1rem;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:110px;resize:vertical;line-height:1.7}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{width:100%;border:0;background:var(--accent);color:var(--accent-ink);font-family:inherit;font-size:1rem;font-weight:700;padding:13px;border-radius:11px;cursor:pointer;margin-top:12px}
+button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:.9rem;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer}
+button.primary:focus-visible,button.ghost:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.vref{font-size:.85rem;font-weight:700;color:var(--accent);letter-spacing:.02em}
+.vtheme{font-size:.8rem;color:var(--muted)}
+.vtext{font-family:var(--font-verse);font-size:1.06rem;line-height:1.9;margin:8px 0 0;word-break:keep-all}
+.scorebar{display:flex;align-items:center;gap:10px;margin-top:10px}
+.scorebar .pct{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.diff{font-family:var(--font-verse);line-height:1.9;margin-top:8px;word-break:keep-all}
+.diff .miss{background:var(--bad-soft);color:var(--bad);border-radius:4px;padding:0 2px}
+.diff .extra{background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 2px;text-decoration:line-through}
+.resultcard{white-space:pre-wrap;font-size:.9rem;background:var(--surface2);border-radius:10px;padding:12px;margin-top:10px;font-variant-numeric:tabular-nums}
+.btnrow{display:flex;gap:8px;margin-top:10px}
+.btnrow button{flex:1}
+.verselist details{border-bottom:1px solid var(--line);padding:6px 0}
+.verselist details:last-child{border-bottom:0}
+.verselist summary{cursor:pointer;font-weight:600;font-size:.95rem;padding:6px 0;list-style:none;display:flex;justify-content:space-between;gap:8px}
+.verselist summary::-webkit-details-marker{display:none}
+.verselist summary .no{color:var(--muted);font-weight:500;font-size:.8rem;white-space:nowrap}
+.cathead{margin:18px 0 4px;font-size:.85rem;font-weight:800;color:var(--accent);letter-spacing:.03em}
+table.rec{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
+table.rec th,table.rec td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+table.rec th{color:var(--muted);font-size:.75rem;letter-spacing:.03em}
+.tablewrap{overflow-x:auto}
+.hintword{margin-right:.4em;letter-spacing:.06em}
+.smallmuted{font-size:.8rem;color:var(--muted)}
+footer.app{margin-top:28px;font-size:.75rem;color:var(--muted);line-height:1.7}
+#testResult{scroll-margin-top:70px}
+a{color:var(--accent)}
+.segrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.segrow button{border:1px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer}
+.segrow button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+@media (prefers-reduced-motion: no-preference){
+  section.panel.on{animation:fade .18s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+}
+</style>
+
+<div class="wrap">
+  <header class="app">
+    <div class="brand"><h1>72구절 암송 시험</h1><span class="town" id="townName"></span></div>
+    <div class="weekcard" id="weekCard">
+      <div class="wk" id="wkNum">–주차</div>
+      <div class="theme" id="wkTheme"></div>
+      <div class="range" id="wkRange"></div>
+    </div>
+    <div id="startNotice"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="test" class="on">시험</button>
+    <button data-tab="practice">연습</button>
+    <button data-tab="verses">구절집</button>
+    <button data-tab="history">기록</button>
+    <button data-tab="admin">확인</button>
+  </nav>
+
+  <section class="panel on" id="panel-test">
+    <div class="card">
+      <h2>이번 주 시험</h2>
+      <label class="label" for="testName">이름</label>
+      <input type="text" id="testName" placeholder="이름을 입력하세요" autocomplete="off">
+      <label class="label" for="testWeek">응시 주차</label>
+      <select id="testWeek"></select>
+      <div id="testBody"></div>
+      <button class="primary" id="btnSubmit">제출하고 채점하기</button>
+      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 채점은 띄어쓰기·문장부호를 빼고 글자 기준으로 비교합니다.</p>
+      <div id="formMsg"></div>
+    </div>
+    <div id="testResult"></div>
+  </section>
+
+  <section class="panel" id="panel-practice">
+    <div class="card">
+      <h2>연습</h2>
+      <label class="label" for="pracWeek">주차 선택</label>
+      <select id="pracWeek"></select>
+      <div class="segrow" id="pracModes">
+        <button data-mode="card" class="on">암송 카드</button>
+        <button data-mode="hint">첫 글자</button>
+        <button data-mode="type">써보기</button>
+      </div>
+      <div id="pracBody"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-verses">
+    <div class="card">
+      <h2>72구절 전체</h2>
+      <p class="smallmuted">사랑의교회 성경암송 72구절 (출처: amsong.sarang.org)</p>
+      <div class="verselist" id="verseList"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-history">
+    <div class="card">
+      <h2>내 기록</h2>
+      <p class="smallmuted">이 휴대폰(브라우저)에 저장된 나의 시험 기록입니다.</p>
+      <div class="tablewrap"><table class="rec" id="histTable"></table></div>
+      <div class="btnrow"><button class="ghost" id="btnClearHist">기록 지우기</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-admin">
+    <div class="card">
+      <h2>결과 확인 (마을장용)</h2>
+      <p class="smallmuted">리더들이 카톡으로 보낸 결과 메시지를 그대로 모두 붙여넣으세요. 자동으로 표로 정리되고 확인코드도 검증됩니다.</p>
+      <textarea id="adminPaste" placeholder="📖 로 시작하는 결과 메시지를 여러 개 한꺼번에 붙여넣어도 됩니다."></textarea>
+      <button class="primary" id="btnParse">정리하기</button>
+      <div id="adminOut"></div>
+    </div>
+  </section>
+
+  <footer class="app" id="footInfo"></footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- 데이터: 사랑의교회 72구절 (amsong.sarang.org) ---------- */
+const CATS = {A:"새로운 삶",B:"그리스도를 전파함",C:"하나님을 의뢰함",D:"그리스도 제자의 자격",E:"그리스도를 닮아감",F:"온전한 인격"};
+const V = [];
+function addCat(c, arr){ arr.forEach(function(v){ V.push({c:c, cat:CATS[c], theme:v[0], ref:v[1], text:v[2], mp3:v[3]}); }); }
+const M = "https://dy73mtat736le.cloudfront.net/tts/amsong/seventytwo/Amsong_";
+addCat("A",[
+["중심되신 그리스도","고린도후서 5:17","그런즉 누구든지 그리스도 안에 있으면 새로운 피조물이라 이전 것은 지나갔으니 보라 새 것이 되었도다",M+"A1_pastoroh.mp3"],
+["중심되신 그리스도","갈라디아서 2:20","내가 그리스도와 함께 십자가에 못박혔나니 그런즉 이제는 내가 사는 것이 아니요 오직 내 안에 그리스도께서 사시는 것이라 이제 내가 육체 가운데 사는 것은 나를 사랑하사 나를 위하여 자기 자신을 버리신 하나님의 아들을 믿는 믿음 안에서 사는 것이라",M+"A2_pastoroh.mp3"],
+["그리스도께 순종","로마서 12:1","그러므로 형제들아 내가 하나님의 모든 자비하심으로 너희를 권하노니 너희 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리라 이는 너희가 드릴 영적 예배니라",M+"A3_pastoroh.mp3"],
+["그리스도께 순종","요한복음 14:21","나의 계명을 지키는 자라야 나를 사랑하는 자니 나를 사랑하는 자는 내 아버지께 사랑을 받을 것이요 나도 그를 사랑하여 그에게 나를 나타내리라",M+"A4_pastoroh.mp3"],
+["말씀","디모데후서 3:16","모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니",M+"A5_pastoroh2.mp3"],
+["말씀","여호수아 1:8","이 율법책을 네 입에서 떠나지 말게 하며 주야로 그것을 묵상하여 그 안에 기록된 대로 다 지켜 행하라 그리하면 네 길이 평탄하게 될 것이며 네가 형통하리라",M+"A6_pastoroh2.mp3"],
+["기도","요한복음 15:7","너희가 내 안에 거하고 내 말이 너희 안에 거하면 무엇이든지 원하는 대로 구하라 그리하면 이루리라",M+"A7_pastoroh.mp3"],
+["기도","빌립보서 4:6,7","아무것도 염려하지 말고 다만 모든 일에 기도와 간구로 너희 구할 것을 감사함으로 하나님께 아뢰라 그리하면 모든 지각에 뛰어난 하나님의 평강이 그리스도 예수 안에서 너희 마음과 생각을 지키시리라",M+"A8_pastoroh.mp3"],
+["교제","마태복음 18:20","두세 사람이 내 이름으로 모인 곳에는 나도 그들 중에 있느니라",M+"A9_pastoroh.mp3"],
+["교제","히브리서 10:24,25","서로 돌아보아 사랑과 선행을 격려하며 모이기를 폐하는 어떤 사람들의 습관과 같이 하지 말고 오직 권하여 그날이 가까움을 볼수록 더욱 그리하자",M+"A10_pastoroh.mp3"],
+["증거","마태복음 4:19","말씀하시되 나를 따라 오라 내가 너희를 사람을 낚는 어부가 되게 하리라 하시니",M+"A11_pastoroh.mp3"],
+["증거","로마서 1:16","내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다",M+"A12_pastoroh.mp3"]
+]);
+addCat("B",[
+["모든 사람이 죄를 범함","로마서 3:23","모든 사람이 죄를 범하였으매 하나님의 영광에 이르지 못하더니",M+"B1_pastoroh.mp3"],
+["모든 사람이 죄를 범함","이사야 53:6","우리는 다 양 같아서 그릇 행하여 각기 제 길로 갔거늘 여호와께서는 우리 모두의 죄악을 그에게 담당시키셨도다",M+"B2_pastoroh.mp3"],
+["죄의 형벌","로마서 6:23","죄의 삯은 사망이요 하나님의 은사는 그리스도 예수 우리 주 안에 있는 영생이니라",M+"B3_pastoroh.mp3"],
+["죄의 형벌","히브리서 9:27","한 번 죽는 것은 사람에게 정해진 것이요 그 후에는 심판이 있으리니",M+"B4_pastoroh.mp3"],
+["그리스도가 형벌을 받음","로마서 5:8","우리가 아직 죄인 되었을 때에 그리스도께서 우리를 위하여 죽으심으로 하나님께서 우리에 대한 자기의 사랑을 확증하셨느니라",M+"B5_pastoroh.mp3"],
+["그리스도가 형벌을 받음","베드로전서 3:18","그리스도께서도 단번에 죄를 위하여 죽으사 의인으로서 불의한 자를 대신하셨으니 이는 우리를 하나님 앞으로 인도하려 하심이라 육체로는 죽임을 당하시고 영으로는 살리심을 받으셨으니",M+"B6_pastoroh.mp3"],
+["선행으로 구원받지 못함","에베소서 2:8,9","너희는 그 은혜에 의하여 믿음으로 말미암아 구원을 받았으니 이것은 너희에게서 난 것이 아니요 하나님의 선물이라 행위에서 난 것이 아니니 이는 누구든지 자랑하지 못하게 함이라",M+"B7_pastoroh.mp3"],
+["선행으로 구원받지 못함","디도서 3:5","우리를 구원하시되 우리가 행한바 의로운 행위로 말미암지 아니하고 오직 그의 긍휼하심을 따라 중생의 씻음과 성령의 새롭게 하심으로 하셨나니",M+"B8_pastoroh.mp3"],
+["그리스도를 모셔야 함","요한복음 1:12","영접하는 자 곧 그 이름을 믿는 자들에게는 하나님의 자녀가 되는 권세를 주셨으니",M+"B9_pastoroh.mp3"],
+["그리스도를 모셔야 함","요한계시록 3:20","볼지어다 내가 문밖에 서서 두드리노니 누구든지 내 음성을 듣고 문을 열면 내가 그에게로 들어가 그와 더불어 먹고 그는 나와 더불어 먹으리라",M+"B10_pastoroh.mp3"],
+["구원의 확신","요한일서 5:13","내가 하나님의 아들의 이름을 믿는 너희에게 이것을 쓰는 것은 너희로 하여금 너희에게 영생이 있음을 알게 하려 함이라",M+"B11_pastoroh.mp3"],
+["구원의 확신","요한복음 5:24","내가 진실로 진실로 너희에게 이르노니 내 말을 듣고 또 나 보내신 이를 믿는 자는 영생을 얻었고 심판에 이르지 아니하나니 사망에서 생명으로 옮겼느니라",M+"B12_pastoroh.mp3"]
+]);
+addCat("C",[
+["성령","고린도전서 3:16","너희는 너희가 하나님의 성전인 것과 하나님의 성령이 너희 안에 계시는 것을 알지 못하느냐",M+"C1_pastoroh.mp3"],
+["성령","고린도전서 2:12","우리가 세상의 영을 받지 아니하고 오직 하나님으로부터 온 영을 받았으니 이는 우리로 하여금 하나님께서 우리에게 은혜로 주신 것들을 알게하려 하심이라",M+"C2_pastoroh.mp3"],
+["능력","이사야 41:10","두려워하지 말라 내가 너와 함께 함이라 놀라지 말라 나는 네 하나님이 됨이라 내가 너를 굳세게 하리라 참으로 너를 도와 주리라 참으로 나의 의로운 오른손으로 너를 붙들리라",M+"C3_pastoroh.mp3"],
+["능력","빌립보서 4:13","내게 능력 주시는 자 안에서 내가 모든 것을 할 수 있느니라",M+"C4_pastoroh.mp3"],
+["성실","예레미야애가 3:22,23","여호와의 인자와 긍휼이 무궁하시므로 우리가 진멸되지 아니함이니이다 이것들이 아침마다 새로우니 주의 성실하심이 크시도소이다",M+"C5_pastoroh.mp3"],
+["성실","민수기 23:19","하나님은 사람이 아니시니 거짓말을 하지 않으시고 인생이 아니시니 후회가 없으시도다 어찌 그 말씀하신 바를 행하지 않으시며 하신 말씀을 실행하지 않으시랴",M+"C6_pastoroh.mp3"],
+["평안","이사야 26:3","주께서 심지가 견고한 자를 평강하고 평강하도록 지키시리니 이는 그가 주를 신뢰함이니이다",M+"C7_pastoroh.mp3"],
+["평안","베드로전서 5:7","너희 염려를 다 주께 맡기라 이는 그가 너희를 돌보심이라",M+"C8_pastoroh.mp3"],
+["공급","로마서 8:32","자기 아들을 아끼지 아니하시고 우리 모든 사람을 위하여 내주신 이가 어찌 그 아들과 함께 모든 것을 우리에게 주시지 아니하겠느냐",M+"C9_pastoroh.mp3"],
+["공급","빌립보서 4:19","나의 하나님이 그리스도 예수 안에서 영광 가운데 그 풍성한 대로 너희 모든 쓸 것을 채우시리라",M+"C10_pastoroh.mp3"],
+["유혹에서 도우심","히브리서 2:18","그가 시험을 받아 고난을 당하셨은즉 시험받는 자들을 능히 도우실 수 있느니라",M+"C11_pastoroh.mp3"],
+["유혹에서 도우심","시편 119:9,11","청년이 무엇으로 그의 행실을 깨끗하게 하리이까 주의 말씀만 지킬 따름이니이다 내가 주께 범죄하지 아니하려 하여 주의 말씀을 내 마음에 두었나이다",M+"C12_pastoroh.mp3"]
+]);
+addCat("D",[
+["그리스도를 첫자리에 모심","마태복음 6:33","그런즉 너희는 먼저 그의 나라와 그의 의를 구하라 그리하면 이 모든 것을 너희에게 더하시리라",M+"D1_pastoroh.mp3"],
+["그리스도를 첫자리에 모심","누가복음 9:23","또 무리에게 이르시되 아무든지 나를 따라 오려거든 자기를 부인하고 날마다 제 십자가를 지고 나를 따를 것이니라",M+"D2_pastoroh.mp3"],
+["죄에서 떠남","요한일서 2:15,16","이 세상이나 세상에 있는 것들을 사랑하지 말라 누구든지 세상을 사랑하면 아버지의 사랑이 그 안에 있지 아니하니 이는 세상에 있는 모든 것이 육신의 정욕과 안목의 정욕과 이생의 자랑이니 다 아버지께로부터 온 것이 아니요 세상으로부터 온 것이라",M+"D3_pastoroh.mp3"],
+["죄에서 떠남","로마서 12:2","너희는 이 세대를 본받지 말고 오직 마음을 새롭게 함으로 변화를 받아 하나님의 선하시고 기뻐하시고 온전하신 뜻이 무엇인지 분별하도록 하라",M+"D4_pastoroh.mp3"],
+["견고함","고린도전서 15:58","그러므로 내 사랑하는 형제들아 견실하며 흔들리지 말고 항상 주의 일에 더욱 힘쓰는 자들이 되라 이는 너희 수고가 주 안에서 헛되지 않은 줄 앎이라",M+"D5_pastoroh.mp3"],
+["견고함","히브리서 12:3","너희가 피곤하여 낙심하지 않기 위하여 죄인들이 이같이 자기에게 거역한 일을 참으신 이를 생각하라",M+"D6_pastoroh.mp3"],
+["다른 사람을 섬김","마가복음 10:45","인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 하고 자기 목숨을 많은 사람의 대속물로 주려 함이니라",M+"D7_pastoroh.mp3"],
+["다른 사람을 섬김","고린도후서 4:5","우리는 우리를 전파하는 것이 아니라 오직 그리스도 예수의 주 되신 것과 또 예수를 위하여 우리가 너희의 종 된 것을 전파함이라",M+"D8_pastoroh.mp3"],
+["후히 드릴 것","잠언 3:9,10","네 재물과 네 소산물의 처음 익은 열매로 여호와를 공경하라 그리하면 네 창고가 가득히 차고 네 포도즙 틀에 새 포도즙이 넘치리라",M+"D9_pastoroh.mp3"],
+["후히 드릴 것","고린도후서 9:6,7","이것이 곧 적게 심는 자는 적게 거두고 많이 심는 자는 많이 거둔다 하는 말이로다 각각 그 마음에 정한 대로 할 것이요 인색함으로나 억지로 하지 말지니 하나님은 즐겨 내는 자를 사랑하시느니라",M+"D10_pastoroh.mp3"],
+["세계 비전","사도행전 1:8","오직 성령이 너희에게 임하시면 너희가 권능을 받고 예루살렘과 온 유대와 사마리아와 땅끝까지 이르러 내 증인이 되리라 하시니라",M+"D11_pastoroh.mp3"],
+["세계 비전","마태복음 28:19,20","그러므로 너희는 가서 모든 민족을 제자로 삼아 아버지와 아들과 성령의 이름으로 세례를 베풀고 내가 너희에게 분부한 모든 것을 가르쳐 지키게 하라 볼지어다 내가 세상 끝날까지 너희와 항상 함께 있으리라 하시니라",M+"D12_pastoroh.mp3"]
+]);
+addCat("E",[
+["사랑","요한복음 13:34,35","새 계명을 너희에게 주노니 서로 사랑하라 내가 너희를 사랑한 것같이 너희도 서로 사랑하라 너희가 서로 사랑하면 이로써 모든 사람이 너희가 내 제자인 줄 알리라",M+"E1_pastoroh.mp3"],
+["사랑","요한일서 3:18","자녀들아 우리가 말과 혀로만 사랑하지 말고 행함과 진실함으로 하자",M+"E2_pastoroh.mp3"],
+["겸손","빌립보서 2:3,4","아무 일에든지 다툼이나 허영으로 하지 말고 오직 겸손한 마음으로 각각 자기보다 남을 낫게 여기고 각각 자기 일을 돌볼 뿐더러 또한 각각 다른 사람들의 일을 돌보아 나의 기쁨을 충만하게 하라",M+"E3_pastoroh.mp3"],
+["겸손","베드로전서 5:5,6","젊은 자들아 이와 같이 장로들에게 순종하고 다 서로 겸손으로 허리를 동이라 하나님은 교만한 자를 대적하시되 겸손한 자들에게는 은혜를 주시느니라 그러므로 하나님의 능하신 손아래에서 겸손하라 때가 되면 너희를 높이시리라",M+"E4_pastoroh.mp3"],
+["순결","에베소서 5:3","음행과 온갖 더러운 것과 탐욕은 너희 중에서 그 이름조차도 부르지 말라 이는 성도에게 마땅한 바니라",M+"E5_pastoroh.mp3"],
+["순결","베드로전서 2:11","사랑하는 자들아 거류민과 나그네 같은 너희를 권하노니 영혼을 거슬러 싸우는 육체의 정욕을 제어하라",M+"E6_pastoroh.mp3"],
+["정직","레위기 19:11","너희는 도둑질하지 말며 속이지 말며 서로 거짓말하지 말며",M+"E7_pastoroh.mp3"],
+["정직","사도행전 24:16","이것으로 말미암아 나도 하나님과 사람에 대하여 항상 양심에 거리낌이 없기를 힘쓰나이다",M+"E8_pastoroh.mp3"],
+["믿음","히브리서 11:6","믿음이 없이는 하나님을 기쁘시게 하지 못하나니 하나님께 나아가는 자는 반드시 그가 계신 것과 또한 그가 자기를 찾는 자들에게 상 주시는 이심을 믿어야 할지니라",M+"E9_pastoroh.mp3"],
+["믿음","로마서 4:20,21","믿음이 없어 하나님의 약속을 의심하지 않고 믿음으로 견고하여져서 하나님께 영광을 돌리며 약속하신 그것을 또한 능히 이루실 줄을 확신하였으니",M+"E10_pastoroh.mp3"],
+["선행","갈라디아서 6:9,10","우리가 선을 행하되 낙심하지 말지니 포기하지 아니하면 때가 이르매 거두리라 그러므로 우리는 기회 있는 대로 모든 이에게 착한 일을 하되 더욱 믿음의 가정들에게 할지니라",M+"E11_pastoroh.mp3"],
+["선행","마태복음 5:16","이같이 너희 빛이 사람 앞에 비치게 하여 그들로 너희 착한 행실을 보고 하늘에 계신 너희 아버지께 영광을 돌리게 하라",M+"E12_pastoroh.mp3"]
+]);
+addCat("F",[
+["사고의 온전함","로마서 8:5,6","육신을 따르는 자는 육신의 일을, 영을 따르는 자는 영의 일을 생각하나니  육신의 생각은 사망이요 영의 생각은 생명과 평안이니라",M+"F1_pastoroh.mp3"],
+["사고의 온전함","고린도후서 10:5","하나님 아는 것을 대적하여 높아진 것을 다 무너뜨리고 모든 생각을 사로잡아 그리스도에게 복종하게 하니",M+"F2_pastoroh.mp3"],
+["감정의 온전함","요한복음 15:11","내가 이것을 너희에게 이름은 내 기쁨이 너희 안에 있어 너희 기쁨을 충만하게 하려 함이라",M+"F3_pastoroh.mp3"],
+["감정의 온전함","골로새서 3:16","그리스도의 말씀이 너희 속에 풍성히 거하여 모든 지혜로 피차 가르치며 권면하고 시와 찬송과 신령한 노래를 부르며 감사하는 마음으로 하나님을 찬양하고",M+"F4_pastoroh.mp3"],
+["의지의 온전함","로마서 14:7,8","우리 중에 누구든지 자기를 위하여 사는 자가 없고 자기를 위하여 죽는 자도 없도다. 우리가 살아도 주를 위하여 살고 죽어도 주를 위하여 죽나니 그러므로 사나 죽으나 우리가 주의 것이로다",M+"F5_pastoroh.mp3"],
+["의지의 온전함","골로새서 2:6,7","그러므로 너희가 그리스도 예수를 주로 받았으니 그 안에서 행하되 그 안에 뿌리를 박으며 세움을 받아 교훈을 받은 대로 믿음에 굳게 서서 감사함을 넘치게 하라",M+"F6_pastoroh.mp3"],
+["관계의 온전함","마태복음 7:12","그러므로 무엇이든지 남에게 대접을 받고자 하는 대로 너희도 남을 대접하라 이것이 율법이요 선지자니라",M+"F7_pastoroh.mp3"],
+["관계의 온전함","마태복음 22:37~39","예수께서 이르시되 네 마음을 다하고 목숨을 다하고 뜻을 다하여 주 너의 하나님을 사랑하라 하셨으니 이것이 크고 첫째 되는 계명이요 둘째도 그와 같으니 네 이웃을 네 자신 같이 사랑하라 하셨으니",M+"F8_pastoroh.mp3"],
+["행실의 온전함","고린도후서 5:10","이는 우리가 다 반드시 그리스도의 심판대 앞에 나타나게 되어 각각 선악간에 그 몸으로 행한 것을 따라 받으려 함이라",M+"F9_pastoroh.mp3"],
+["행실의 온전함","빌립보서 2:13,14","너희 안에서 행하시는 이는 하나님이시니 자기의 기쁘신 뜻을 위하여 너희에게 소원을 두고 행하게 하시나니 모든 일을 원망과 시비가 없이 하라",M+"F10_pastoroh.mp3"],
+["온전함을 사모함","베드로전서 5:10","모든 은혜의 하나님 곧 그리스도 안에서 너희를 부르사 자기의 영원한 영광에 들어가게 하신 이가 잠깐 고난을 당한 너희를 친히 온전하게 하시며 굳건하게 하시며 강하게 하시며 터를 견고하게 하시리라",M+"F11_pastoroh.mp3"],
+["온전함을 사모함","골로새서 1:28,29","우리가 그를 전파하여 각 사람을 권하고 모든 지혜로 각 사람을 가르침은 각 사람을 그리스도 안에서 완전한 자로 세우려 함이니 이를 위하여 나도 내 속에서 능력으로 역사하시는 이의 역사를 따라 힘을 다하여 수고하노라",M+"F12_pastoroh.mp3"]
+]);
+
+/* ===== 마을 설정 (이 세 줄만 바꾸면 됩니다) ===== */
+const CONFIG = {
+  start: "2026-08-09",  // 1주차 주일 (일요일, YYYY-MM-DD)
+  pass: 90,             // 구절당 합격 기준 %
+  town: ""              // 마을 이름 (선택)
+};
+/* 직접 호스팅하는 경우 URL 파라미터 ?s= ?p= ?t= 로도 덮어쓸 수 있음 (아티팩트 배포에서는 파라미터가 전달되지 않으므로 위 CONFIG가 기준) */
+const params = new URLSearchParams(location.search);
+function validYmd(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s) && utcToYmd(ymdToUtc(s)) === s; }
+const sParam = params.get("s") || "";
+const RAW_START = validYmd(sParam) ? sParam : (validYmd(CONFIG.start) ? CONFIG.start : "2026-08-09");
+/* localStorage가 막힌 환경(일부 임베드 뷰어)에서도 앱이 죽지 않도록 감싼다 */
+const store = {
+  get: function(k){ try{ return window.localStorage.getItem(k); }catch(e){ return null; } },
+  set: function(k,v){ try{ window.localStorage.setItem(k,v); }catch(e){} },
+  del: function(k){ try{ window.localStorage.removeItem(k); }catch(e){} }
+};
+const PASS = Math.min(100, Math.max(1, parseInt(params.get("p") || String(CONFIG.pass), 10) || 90));
+const TOWN = (params.get("t") || CONFIG.town || "").slice(0, 20);
+const TOTAL_WEEKS = 36;
+const SALT = "AMSONG72-2026-M7";
+
+/* ---------- 날짜 계산 (한국시간 기준, 주일에 주차 변경) ---------- */
+function ymdToUtc(s){ const p = s.split("-").map(Number); return Date.UTC(p[0], p[1]-1, p[2]); }
+function utcToYmd(ms){ const d = new Date(ms); return d.getUTCFullYear() + "-" + String(d.getUTCMonth()+1).padStart(2,"0") + "-" + String(d.getUTCDate()).padStart(2,"0"); }
+function kstToday(){ // YYYY-MM-DD (Asia/Seoul)
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+}
+function kstNowStamp(){ // "YYYY-MM-DD HH:MM" (Asia/Seoul)
+  const f = new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false});
+  const p = {};
+  f.formatToParts(new Date()).forEach(function(x){ p[x.type] = x.value; });
+  let hh = p.hour === "24" ? "00" : p.hour; // 일부 브라우저는 자정을 24시로 표기
+  return p.year + "-" + p.month + "-" + p.day + " " + hh + ":" + p.minute;
+}
+function snapToSunday(ms){ return ms - new Date(ms).getUTCDay() * 86400000; }
+const START_SUN = snapToSunday(ymdToUtc(RAW_START));
+function currentWeekRaw(){ return Math.floor((ymdToUtc(kstToday()) - START_SUN) / (7 * 86400000)) + 1; }
+function clampWeek(w){ return Math.min(TOTAL_WEEKS, Math.max(1, w)); }
+function weekVerses(w){ return [V[(w-1)*2], V[(w-1)*2+1]]; }
+function weekRangeText(w){
+  const a = START_SUN + (w-1)*7*86400000, b = a + 6*86400000;
+  const f = function(ms){ const d = new Date(ms); return (d.getUTCMonth()+1) + "/" + d.getUTCDate(); };
+  return f(a) + " (주일) ~ " + f(b) + " (토)";
+}
+
+/* ---------- 채점 ---------- */
+function norm(s){ return (s||"").normalize("NFC").replace(/[^0-9A-Za-z가-힣ㄱ-ㆎ]/g,""); }
+function lev(a, b){
+  const m = a.length, n = b.length;
+  if(!m) return n; if(!n) return m;
+  let prev = new Array(n+1), cur = new Array(n+1);
+  for(let j=0;j<=n;j++) prev[j]=j;
+  for(let i=1;i<=m;i++){
+    cur[0]=i;
+    const ca = a.charCodeAt(i-1);
+    for(let j=1;j<=n;j++){
+      const cost = ca === b.charCodeAt(j-1) ? 0 : 1;
+      cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost);
+    }
+    const t = prev; prev = cur; cur = t;
+  }
+  return prev[n];
+}
+function scoreOf(expected, typed){
+  const a = norm(expected), b = norm(typed);
+  if(!b) return 0;
+  return Math.max(0, Math.round((1 - lev(a,b)/Math.max(a.length,b.length,1)) * 100));
+}
+/* 단어 단위 LCS → 피드백 표시 */
+function wordDiff(expected, typed){
+  const E = expected.split(/\s+/).filter(Boolean), T = typed.split(/\s+/).filter(Boolean);
+  const En = E.map(norm), Tn = T.map(norm);
+  const m = En.length, n = Tn.length;
+  const L = [];
+  for(let i=0;i<=m;i++){ L.push(new Array(n+1).fill(0)); }
+  for(let i=m-1;i>=0;i--) for(let j=n-1;j>=0;j--)
+    L[i][j] = En[i] && En[i] === Tn[j] ? L[i+1][j+1]+1 : Math.max(L[i+1][j], L[i][j+1]);
+  const eMark = new Array(m).fill(false), tMark = new Array(n).fill(false);
+  let i=0, j=0;
+  while(i<m && j<n){
+    if(En[i] && En[i] === Tn[j]){ eMark[i]=true; tMark[j]=true; i++; j++; }
+    else if(L[i+1][j] >= L[i][j+1]) i++;
+    else j++;
+  }
+  return {E, T, eMark, tMark};
+}
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function diffHtml(expected, typed){
+  if(norm(typed) && norm(expected) === norm(typed))
+    return '<p class="diff"><span class="pill good">글자까지 정확하게 암송했습니다 👏</span></p>';
+  const d = wordDiff(expected, typed);
+  const exp = d.E.map(function(w,k){ return d.eMark[k] ? esc(w) : '<span class="miss">'+esc(w)+"</span>"; }).join(" ");
+  const got = d.T.length ? d.T.map(function(w,k){ return d.tMark[k] ? esc(w) : '<span class="extra">'+esc(w)+"</span>"; }).join(" ") : '<span class="extra">(입력 없음)</span>';
+  return '<h3>정답 (틀린 부분 표시)</h3><p class="diff">'+exp+'</p><h3>내 답안</h3><p class="diff">'+got+"</p>";
+}
+
+/* ---------- 확인코드 ---------- */
+function fnv(str, seed){
+  let h = seed >>> 0;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h >>> 0;
+}
+function makeCode(name, week, s1, s2, stamp){
+  const c = String(name).replace(/\|/g,"") + "|" + week + "|" + s1 + "," + s2 + "|" + stamp + "|" + SALT;
+  const a = fnv(c, 0x811c9dc5).toString(36).toUpperCase().padStart(7,"0").slice(-4);
+  const b = fnv(c, 0x01234567).toString(36).toUpperCase().padStart(7,"0").slice(-4);
+  return a + "-" + b;
+}
+function makeCard(name, week, r1, s1, r2, s2, stamp){
+  const avg = Math.round((s1+s2)/2), pass = s1>=PASS && s2>=PASS;
+  return "📖 72구절 암송시험 결과\n"
+    + "이름: " + name + "\n"
+    + "주차: " + week + "주차 · " + weekVerses(week)[0].theme + "\n"
+    + "① " + r1 + " — " + s1 + "%\n"
+    + "② " + r2 + " — " + s2 + "%\n"
+    + "평균 " + avg + "% · " + (pass ? "합격 ✅" : "불합격 ❌") + "\n"
+    + "일시: " + stamp + "\n"
+    + "코드: " + makeCode(name, week, s1, s2, stamp);
+}
+
+/* ---------- 공통 UI ---------- */
+const $ = function(id){ return document.getElementById(id); };
+document.querySelectorAll("nav.tabs button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("nav.tabs button").forEach(function(x){ x.classList.toggle("on", x===b); });
+    document.querySelectorAll("section.panel").forEach(function(p){ p.classList.toggle("on", p.id === "panel-"+b.dataset.tab); });
+  });
+});
+
+const rawW = currentWeekRaw();
+const CUR = clampWeek(rawW);
+(function renderHeader(){
+  if(TOWN) $("townName").textContent = TOWN;
+  const wv = weekVerses(CUR);
+  $("wkNum").textContent = CUR + "주차";
+  $("wkTheme").textContent = wv[0].cat + " · " + wv[0].theme;
+  $("wkRange").textContent = weekRangeText(CUR) + " · " + wv[0].ref + " / " + wv[1].ref;
+  if(rawW < 1) $("startNotice").innerHTML = '<div class="notice">아직 시작 전입니다. 1주차는 ' + utcToYmd(START_SUN) + " (주일)부터 시작해요. 그때까지는 연습으로 미리 준비해요.</div>";
+  else if(rawW > TOTAL_WEEKS) $("startNotice").innerHTML = '<div class="notice">36주 과정이 모두 끝났습니다. 수고하셨습니다! 🎉</div>';
+  $("footInfo").innerHTML = "1주차 주일: " + utcToYmd(START_SUN) + " · 합격 기준: 구절당 " + PASS + "% 이상 · 주차는 매주 일요일(한국시간)에 바뀝니다.<br>"
+    + "구절 출처: <a href='https://amsong.sarang.org/m/main.asp' target='_blank' rel='noopener'>사랑의교회 성경암송 72구절</a>";
+})();
+
+/* ---------- 시험 탭 ---------- */
+(function initTest(){
+  const sel = $("testWeek");
+  for(let w=1; w<=CUR; w++){
+    const o = document.createElement("option");
+    o.value = w;
+    o.textContent = w + "주차 · " + weekVerses(w)[0].theme + (w===CUR && rawW===CUR ? " (이번 주)" : "");
+    sel.appendChild(o);
+  }
+  sel.value = CUR;
+  $("testName").value = store.get("am72_name") || "";
+  function renderBody(){
+    const wv = weekVerses(parseInt(sel.value,10));
+    $("testBody").innerHTML = wv.map(function(v,k){
+      return '<h3><span class="vref">' + "①②"[k] + " " + esc(v.ref) + '</span> <span class="vtheme">' + esc(v.theme) + "</span></h3>"
+        + '<textarea id="ans'+k+'" placeholder="구절을 기억나는 대로 입력하세요" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>';
+    }).join("");
+    [0,1].forEach(function(k){
+      const ta = $("ans"+k);
+      ta.addEventListener("paste", function(e){ e.preventDefault(); });
+      ta.addEventListener("drop", function(e){ e.preventDefault(); });
+      ta.addEventListener("beforeinput", function(e){
+        if(e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop" || e.inputType === "insertFromYank") e.preventDefault();
+      });
+    });
+    $("testResult").innerHTML = "";
+  }
+  sel.addEventListener("change", renderBody);
+  renderBody();
+
+  function formMsg(t){ $("formMsg").innerHTML = t ? '<div class="notice">'+t+"</div>" : ""; }
+  $("btnSubmit").addEventListener("click", function(){
+    const name = $("testName").value.trim().replace(/\|/g,"").replace(/📖/g,"").replace(/[\r\n]/g," ").slice(0,15);
+    if(!name){ formMsg("이름을 입력해 주세요."); $("testName").focus(); return; }
+    const w = parseInt(sel.value,10), wv = weekVerses(w);
+    const t1 = $("ans0").value.trim(), t2 = $("ans1").value.trim();
+    if(!t1 && !t2){ formMsg("답안을 입력해 주세요."); return; }
+    formMsg("");
+    store.set("am72_name", name);
+    const s1 = scoreOf(wv[0].text, t1), s2 = scoreOf(wv[1].text, t2);
+    const stamp = kstNowStamp();
+    const card = makeCard(name, w, wv[0].ref, s1, wv[1].ref, s2, stamp);
+    const avg = Math.round((s1+s2)/2), pass = s1>=PASS && s2>=PASS;
+    /* 기록 저장 */
+    let hist = [];
+    try{ hist = JSON.parse(store.get("am72_hist") || "[]"); }catch(e){}
+    hist.unshift({w:w, stamp:stamp, s1:s1, s2:s2, pass:pass});
+    store.set("am72_hist", JSON.stringify(hist.slice(0,200)));
+    renderHist();
+    $("testResult").innerHTML =
+      '<div class="card"><h2>채점 결과</h2>'
+      + '<div class="scorebar"><span class="pct">'+avg+'%</span><span class="pill '+(pass?"good":"bad")+'">'+(pass?"합격":"불합격")+'</span><span class="smallmuted">구절당 '+PASS+'% 이상이면 합격</span></div>'
+      + '<h3>① '+esc(wv[0].ref)+' — '+s1+'%</h3>' + diffHtml(wv[0].text, t1)
+      + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + diffHtml(wv[1].text, t2)
+      + '<h3 style="margin-top:18px">결과 보고</h3><div class="resultcard" id="cardText">'+esc(card)+'</div>'
+      + '<div class="btnrow"><button class="ghost" id="btnCopy">결과 복사</button><button class="ghost" id="btnShare">공유 (카톡)</button></div>'
+      + '<p class="smallmuted">복사한 결과를 마을장에게 카톡으로 보내 주세요. 확인코드가 있어 임의 수정 여부를 검증할 수 있습니다.</p></div>';
+    $("btnCopy").addEventListener("click", function(){ copyText(card, this); });
+    $("btnShare").addEventListener("click", function(){
+      const btn = this;
+      if(navigator.share){
+        try{
+          navigator.share({text: card}).catch(function(e){ if(e && e.name !== "AbortError") copyText(card, btn); });
+        }catch(e){ copyText(card, btn); }
+      } else copyText(card, btn);
+    });
+    $("testResult").scrollIntoView({behavior:"smooth"});
+  });
+})();
+function copyText(t, btn){
+  function done(){ if(btn){ const o = btn.textContent; btn.textContent = "복사됨 ✓"; setTimeout(function(){ btn.textContent = o; }, 1500); } }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function(){ fallbackCopy(t); done(); });
+  else { fallbackCopy(t); done(); }
+}
+function fallbackCopy(t){
+  const ta = document.createElement("textarea");
+  ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+/* ---------- 연습 탭 ---------- */
+(function initPractice(){
+  const sel = $("pracWeek");
+  for(let w=1; w<=TOTAL_WEEKS; w++){
+    const o = document.createElement("option");
+    o.value = w;
+    o.textContent = w + "주차 · " + weekVerses(w)[0].theme + (w===CUR && rawW===CUR ? " (이번 주)" : "");
+    sel.appendChild(o);
+  }
+  sel.value = CUR;
+  let mode = "card";
+  document.querySelectorAll("#pracModes button").forEach(function(b){
+    b.addEventListener("click", function(){
+      mode = b.dataset.mode;
+      document.querySelectorAll("#pracModes button").forEach(function(x){ x.classList.toggle("on", x===b); });
+      render();
+    });
+  });
+  sel.addEventListener("change", render);
+  function firstCharHtml(text){
+    return text.split(/\s+/).filter(Boolean).map(function(w){
+      return '<span class="hintword">' + esc(w[0]) + "·".repeat(Math.max(0, w.length-1)) + "</span>";
+    }).join("");
+  }
+  function render(){
+    const wv = weekVerses(parseInt(sel.value,10));
+    if(mode === "card"){
+      $("pracBody").innerHTML = wv.map(function(v,k){
+        return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
+          + '<button class="ghost" data-reveal="'+k+'">말씀 보기</button>'
+          + '<p class="vtext" id="rv'+k+'" hidden>'+esc(v.text)+'</p>'
+          + '<p class="smallmuted"><a href="'+esc(v.mp3)+'" target="_blank" rel="noopener">🔊 음성으로 듣기</a></p>';
+      }).join("");
+      document.querySelectorAll("[data-reveal]").forEach(function(b){
+        b.addEventListener("click", function(){
+          const p = $("rv"+b.dataset.reveal);
+          p.hidden = !p.hidden;
+          b.textContent = p.hidden ? "말씀 보기" : "가리기";
+        });
+      });
+    } else if(mode === "hint"){
+      $("pracBody").innerHTML = wv.map(function(v){
+        return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
+          + '<p class="vtext">'+firstCharHtml(v.text)+'</p>';
+      }).join("");
+    } else {
+      $("pracBody").innerHTML = wv.map(function(v,k){
+        return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
+          + '<textarea id="pa'+k+'" placeholder="구절을 입력해 보세요"></textarea>'
+          + '<div class="btnrow"><button class="ghost" data-check="'+k+'">채점해 보기</button></div>'
+          + '<div id="pr'+k+'"></div>';
+      }).join("");
+      document.querySelectorAll("[data-check]").forEach(function(b){
+        b.addEventListener("click", function(){
+          const k = parseInt(b.dataset.check,10), v = wv[k], t = $("pa"+k).value.trim();
+          const s = scoreOf(v.text, t);
+          $("pr"+k).innerHTML = '<div class="scorebar"><span class="pct">'+s+'%</span><span class="pill '+(s>=PASS?"good":"bad")+'">'+(s>=PASS?"합격권":"더 연습")+"</span></div>" + diffHtml(v.text, t);
+        });
+      });
+    }
+  }
+  render();
+})();
+
+/* ---------- 구절집 탭 ---------- */
+(function initVerses(){
+  let html = "", lastCat = "";
+  V.forEach(function(v, i){
+    if(v.c !== lastCat){ lastCat = v.c; html += '<div class="cathead">'+v.c+". "+esc(v.cat)+"</div>"; }
+    const w = Math.floor(i/2)+1;
+    html += "<details><summary><span>"+esc(v.ref)+' <span class="vtheme">'+esc(v.theme)+'</span></span><span class="no">'+w+"주차</span></summary>"
+      + '<p class="vtext">'+esc(v.text)+'</p>'
+      + '<p class="smallmuted"><a href="'+esc(v.mp3)+'" target="_blank" rel="noopener">🔊 음성으로 듣기</a></p></details>';
+  });
+  $("verseList").innerHTML = html;
+})();
+
+/* ---------- 기록 탭 ---------- */
+function renderHist(){
+  let hist = [];
+  try{ hist = JSON.parse(store.get("am72_hist") || "[]"); }catch(e){}
+  if(!hist.length){ $("histTable").innerHTML = '<tr><td class="smallmuted">아직 기록이 없습니다.</td></tr>'; return; }
+  $("histTable").innerHTML = "<tr><th>주차</th><th>일시</th><th>①</th><th>②</th><th>결과</th></tr>"
+    + hist.map(function(h){
+      return "<tr><td>"+h.w+"주차</td><td>"+esc(h.stamp)+"</td><td>"+h.s1+"%</td><td>"+h.s2+'%</td><td><span class="pill '+(h.pass?"good":"bad")+'">'+(h.pass?"합격":"불합격")+"</span></td></tr>";
+    }).join("");
+}
+renderHist();
+(function(){
+  let armed = null;
+  $("btnClearHist").addEventListener("click", function(){
+    const b = $("btnClearHist");
+    if(armed){ clearTimeout(armed); armed = null; store.del("am72_hist"); renderHist(); b.textContent = "기록 지우기"; return; }
+    b.textContent = "정말 지울까요? 한 번 더 누르면 삭제";
+    armed = setTimeout(function(){ armed = null; b.textContent = "기록 지우기"; }, 4000);
+  });
+})();
+
+/* ---------- 확인 탭 (마을장) ---------- */
+$("btnParse").addEventListener("click", function(){
+  const raw = $("adminPaste").value;
+  const blocks = raw.split("📖").slice(1);
+  if(!blocks.length){ $("adminOut").innerHTML = '<p class="notice">결과 메시지를 찾지 못했습니다. 📖 로 시작하는 메시지를 붙여넣어 주세요.</p>'; return; }
+  const rows = [];
+  blocks.forEach(function(b){
+    const name = (b.match(/이름:\s*(.+)/) || [])[1];
+    const week = (b.match(/주차:\s*(\d+)\s*주차/) || [])[1];
+    const scores = [];
+    let mm; const re = /[①②]\s*(.+?)\s*—\s*(\d+)%/g;
+    while((mm = re.exec(b))) scores.push({ref: mm[1].trim(), s: parseInt(mm[2],10)});
+    const stamp = (b.match(/일시:\s*([\d-]+\s+[\d:]+)/) || [])[1];
+    const code = (b.match(/코드:\s*([A-Z0-9]{4}-[A-Z0-9]{4})/) || [])[1];
+    if(!name || !week || scores.length < 2 || !stamp || !code) return;
+    const w = parseInt(week,10);
+    const expect = makeCode(name.trim(), w, scores[0].s, scores[1].s, stamp.trim());
+    const avg = Math.round((scores[0].s + scores[1].s)/2);
+    const pass = scores[0].s >= PASS && scores[1].s >= PASS;
+    rows.push({name: name.trim(), w:w, s1:scores[0].s, s2:scores[1].s, avg:avg, pass:pass, stamp:stamp.trim(), ok: expect === code.trim()});
+  });
+  if(!rows.length){ $("adminOut").innerHTML = '<p class="notice">형식에 맞는 결과가 없습니다. 결과 메시지를 수정 없이 그대로 붙여넣어 주세요.</p>'; return; }
+  rows.sort(function(a,b){ return a.w - b.w || a.name.localeCompare(b.name); });
+  let html = '<div class="tablewrap"><table class="rec"><tr><th>이름</th><th>주차</th><th>①</th><th>②</th><th>평균</th><th>결과</th><th>일시</th><th>코드</th></tr>';
+  rows.forEach(function(r){
+    html += "<tr><td>"+esc(r.name)+"</td><td>"+r.w+"</td><td>"+r.s1+"%</td><td>"+r.s2+"%</td><td>"+r.avg+"%</td>"
+      + '<td><span class="pill '+(r.pass?"good":"bad")+'">'+(r.pass?"합격":"불합격")+"</span></td>"
+      + "<td>"+esc(r.stamp)+"</td>"
+      + '<td><span class="pill '+(r.ok?"good":"warn")+'">'+(r.ok?"유효":"불일치")+"</span></td></tr>";
+  });
+  html += "</table></div>";
+  const csv = "이름,주차,구절1,구절2,평균,결과,일시,코드검증\n" + rows.map(function(r){
+    return [r.name, r.w, r.s1, r.s2, r.avg, r.pass?"합격":"불합격", r.stamp, r.ok?"유효":"불일치"].join(",");
+  }).join("\n");
+  html += '<div class="btnrow"><button class="ghost" id="btnCsv">표 복사 (엑셀용 CSV)</button></div>'
+    + '<p class="smallmuted">합격 여부는 현재 설정(구절당 ' + PASS + '% 이상) 기준으로 점수에서 다시 계산한 값입니다. 코드가 "불일치"면 점수·이름·일시 중 무언가가 원본과 다르게 수정된 것입니다.</p>';
+  $("adminOut").innerHTML = html;
+  $("btnCsv").addEventListener("click", function(){ copyText(csv, this); });
+});
+</script>
