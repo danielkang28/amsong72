@@ -166,6 +166,17 @@ a{color:var(--accent)}
       <button class="primary" id="btnParse">정리하기</button>
       <div id="adminOut"></div>
     </div>
+    <div class="card">
+      <h2>진도 맞추기</h2>
+      <p class="smallmuted" id="fixCurrent"></p>
+      <p class="smallmuted">교회 진도와 어긋났을 때 사용하세요. 이번 주에 해당하는 주제를 고르면, 진도가 맞춰진 공유용 주소를 만들어 드립니다. 그 주소를 단톡방에 다시 공지하면 모두에게 적용됩니다.</p>
+      <label class="label" for="fixTheme">이번 주 주제</label>
+      <select id="fixTheme"></select>
+      <label class="label" for="fixWeekNo">이번 주를 몇 주차로 표시할까요</label>
+      <select id="fixWeekNo"></select>
+      <button class="primary" id="btnFix">맞춰진 주소 만들기</button>
+      <div id="fixOut"></div>
+    </div>
   </section>
 
   <footer class="app" id="footInfo"></footer>
@@ -645,4 +656,39 @@ $("btnParse").addEventListener("click", function(){
   $("adminOut").innerHTML = html;
   $("btnCsv").addEventListener("click", function(){ copyText(csv, this); });
 });
+
+/* ---------- 진도 맞추기 (마을장) ---------- */
+(function initFix(){
+  const curThemeIdx = Math.floor(((FIRST_IDX + (CUR-1)*2) % 72) / 2); // 지금 앱이 이번 주로 보는 주제(0~35)
+  $("fixCurrent").textContent = "현재 설정: 이번 주 = " + CUR + "주차 · " + weekVerses(CUR)[0].theme + " (" + weekVerses(CUR)[0].ref + " / " + weekVerses(CUR)[1].ref + ")";
+  const selT = $("fixTheme"), selN = $("fixWeekNo");
+  for(let t=0; t<36; t++){
+    const a = V[t*2], o = document.createElement("option");
+    o.value = t;
+    o.textContent = a.c + ". " + a.theme + " — " + a.ref + " / " + V[t*2+1].ref;
+    selT.appendChild(o);
+  }
+  selT.value = curThemeIdx;
+  for(let n=1; n<=TOTAL_WEEKS; n++){
+    const o = document.createElement("option");
+    o.value = n; o.textContent = n + "주차";
+    selN.appendChild(o);
+  }
+  selN.value = CUR;
+  $("btnFix").addEventListener("click", function(){
+    const T = parseInt(selT.value,10), N = parseInt(selN.value,10);
+    const curSun = snapToSunday(ymdToUtc(kstToday()));          // 이번 주 주일
+    const s = utcToYmd(curSun - (N-1)*7*86400000);              // 1주차 주일 역산
+    const first = verseCode(((T*2 - (N-1)*2) % 72 + 72) % 72);  // 1주차 시작 구절 역산
+    let url = location.origin + location.pathname + "?s=" + s + "&v=" + first;
+    if(PASS !== 90) url += "&p=" + PASS;
+    if(TOWN) url += "&t=" + encodeURIComponent(TOWN);
+    $("fixOut").innerHTML =
+      '<h3>맞춰진 주소</h3><div class="resultcard" id="fixUrl">' + esc(url) + "</div>"
+      + '<div class="btnrow"><button class="ghost" id="btnFixCopy">주소 복사</button></div>'
+      + '<p class="smallmuted">이 주소로 접속하면 이번 주가 ' + N + "주차 · " + esc(V[T*2].theme) + "가 됩니다. 단톡방에 다시 공지해 주세요. "
+      + "파일 자체에 영구 반영하려면 index.html의 CONFIG를 start: \"" + s + "\", firstVerse: \"" + first + "\" 로 바꾸면 됩니다.</p>";
+    $("btnFixCopy").addEventListener("click", function(){ copyText(url, this); });
+  });
+})();
 </script>
