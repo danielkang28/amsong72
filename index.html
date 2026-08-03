@@ -263,13 +263,14 @@ addCat("F",[
 ["온전함을 사모함","골로새서 1:28,29","우리가 그를 전파하여 각 사람을 권하고 모든 지혜로 각 사람을 가르침은 각 사람을 그리스도 안에서 완전한 자로 세우려 함이니 이를 위하여 나도 내 속에서 능력으로 역사하시는 이의 역사를 따라 힘을 다하여 수고하노라",M+"F12_pastoroh.mp3"]
 ]);
 
-/* ===== 마을 설정 (이 세 줄만 바꾸면 됩니다) ===== */
+/* ===== 마을 설정 (여기만 바꾸면 됩니다) ===== */
 const CONFIG = {
   start: "2026-08-09",  // 1주차 주일 (일요일, YYYY-MM-DD)
+  firstVerse: "A1",     // 1주차에 시작할 구절 (교회 진도표에 맞추기: 예 "C5" 또는 "25"). 각 주는 여기서부터 2구절씩, F12 다음은 A1로 이어짐
   pass: 90,             // 구절당 합격 기준 %
   town: ""              // 마을 이름 (선택)
 };
-/* 직접 호스팅하는 경우 URL 파라미터 ?s= ?p= ?t= 로도 덮어쓸 수 있음 (아티팩트 배포에서는 파라미터가 전달되지 않으므로 위 CONFIG가 기준) */
+/* URL 파라미터 ?s= ?v= ?p= ?t= 로도 덮어쓸 수 있음 */
 const params = new URLSearchParams(location.search);
 function validYmd(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s) && utcToYmd(ymdToUtc(s)) === s; }
 const sParam = params.get("s") || "";
@@ -281,6 +282,23 @@ const store = {
   del: function(k){ try{ window.localStorage.removeItem(k); }catch(e){} }
 };
 const PASS = Math.min(100, Math.max(1, parseInt(params.get("p") || String(CONFIG.pass), 10) || 90));
+/* 시작 구절: "C5" 같은 카테고리+번호 또는 "25" 같은 1~72 번호 → 0-기준 인덱스 */
+function parseVerseCode(s){
+  if(!s) return null;
+  s = String(s).trim().toUpperCase();
+  let m = s.match(/^([A-F])\s*(\d{1,2})$/);
+  if(m){ const n = parseInt(m[2],10); if(n>=1 && n<=12) return "ABCDEF".indexOf(m[1])*12 + (n-1); return null; }
+  m = s.match(/^(\d{1,2})$/);
+  if(m){ const n = parseInt(m[1],10); if(n>=1 && n<=72) return n-1; }
+  return null;
+}
+const FIRST_IDX = (function(){
+  const v = parseVerseCode(params.get("v"));
+  if(v !== null) return v;
+  const c = parseVerseCode(CONFIG.firstVerse);
+  return c !== null ? c : 0;
+})();
+function verseCode(i){ return "ABCDEF"[Math.floor(i/12)] + (i%12+1); }
 const TOWN = (params.get("t") || CONFIG.town || "").slice(0, 20);
 const TOTAL_WEEKS = 36;
 const SALT = "AMSONG72-2026-M7";
@@ -302,7 +320,8 @@ function snapToSunday(ms){ return ms - new Date(ms).getUTCDay() * 86400000; }
 const START_SUN = snapToSunday(ymdToUtc(RAW_START));
 function currentWeekRaw(){ return Math.floor((ymdToUtc(kstToday()) - START_SUN) / (7 * 86400000)) + 1; }
 function clampWeek(w){ return Math.min(TOTAL_WEEKS, Math.max(1, w)); }
-function weekVerses(w){ return [V[(w-1)*2], V[(w-1)*2+1]]; }
+function weekVerses(w){ const i = (FIRST_IDX + (w-1)*2) % 72; return [V[i], V[(i+1)%72]]; }
+function weekOfVerse(i){ return Math.floor(((i - FIRST_IDX + 72) % 72) / 2) + 1; }
 function weekRangeText(w){
   const a = START_SUN + (w-1)*7*86400000, b = a + 6*86400000;
   const f = function(ms){ const d = new Date(ms); return (d.getUTCMonth()+1) + "/" + d.getUTCDate(); };
@@ -403,7 +422,7 @@ const CUR = clampWeek(rawW);
   $("wkRange").textContent = weekRangeText(CUR) + " · " + wv[0].ref + " / " + wv[1].ref;
   if(rawW < 1) $("startNotice").innerHTML = '<div class="notice">아직 시작 전입니다. 1주차는 ' + utcToYmd(START_SUN) + " (주일)부터 시작해요. 그때까지는 연습으로 미리 준비해요.</div>";
   else if(rawW > TOTAL_WEEKS) $("startNotice").innerHTML = '<div class="notice">36주 과정이 모두 끝났습니다. 수고하셨습니다! 🎉</div>';
-  $("footInfo").innerHTML = "1주차 주일: " + utcToYmd(START_SUN) + " · 합격 기준: 구절당 " + PASS + "% 이상 · 주차는 매주 일요일(한국시간)에 바뀝니다.<br>"
+  $("footInfo").innerHTML = "1주차 주일: " + utcToYmd(START_SUN) + " · 1주차 시작 구절: " + verseCode(FIRST_IDX) + " (" + V[FIRST_IDX].ref + ") · 합격 기준: 구절당 " + PASS + "% 이상 · 주차는 매주 일요일(한국시간)에 바뀝니다.<br>"
     + "구절 출처: <a href='https://amsong.sarang.org/m/main.asp' target='_blank' rel='noopener'>사랑의교회 성경암송 72구절</a>";
 })();
 
@@ -558,7 +577,7 @@ function fallbackCopy(t){
   let html = "", lastCat = "";
   V.forEach(function(v, i){
     if(v.c !== lastCat){ lastCat = v.c; html += '<div class="cathead">'+v.c+". "+esc(v.cat)+"</div>"; }
-    const w = Math.floor(i/2)+1;
+    const w = weekOfVerse(i);
     html += "<details><summary><span>"+esc(v.ref)+' <span class="vtheme">'+esc(v.theme)+'</span></span><span class="no">'+w+"주차</span></summary>"
       + '<p class="vtext">'+esc(v.text)+'</p>'
       + '<p class="smallmuted"><a href="'+esc(v.mp3)+'" target="_blank" rel="noopener">🔊 음성으로 듣기</a></p></details>';
