@@ -13,7 +13,8 @@ function authorize() {
 function doGet(e) {
   var qs = buildQs_(e && e.parameter);
   var html = HtmlService.createHtmlOutputFromFile('index').getContent();
-  return HtmlService.createHtmlOutput('<script>window.__QS = ' + JSON.stringify(qs) + ';</script>' + html)
+  var execUrl = ScriptApp.getService().getUrl(); // 샌드박스 iframe에서는 location으로 알 수 없는 실제 /exec 주소
+  return HtmlService.createHtmlOutput('<script>window.__QS = ' + JSON.stringify(qs) + ';window.__URL = ' + JSON.stringify(execUrl) + ';</script>' + html)
     .setTitle('72구절 암송 시험')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -45,15 +46,22 @@ function jsonOut_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
 
-/** 시트에 테스트 행을 쓰고 → 읽어 확인하고 → 지운다. 흔적 없이 왕복 검증 */
+/** 시트에 테스트 행을 쓰고 → 읽어 확인하고 → 지운다. 흔적 없이 왕복 + 수식주입 방어 검증
+ *  이름을 '=1+1'로 제출: 방어가 되면 문자열 그대로, 뚫리면 수식으로 계산된 2가 읽힌다 */
 function selfTest_() {
-  submitResult({ name: '__selftest', week: 99, theme: 't', ref1: 'r1', s1: 1, ref2: 'r2', s2: 2, avg: 2, pass: false, stamp: 'test', code: 'TEST-TEST' });
+  submitResult({ name: '=1+1', week: 99, theme: 't', ref1: 'r1', s1: 1, ref2: 'r2', s2: 2, avg: 2, pass: false, stamp: 'test', code: 'TEST-TEST' });
   var sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
   var last = sh.getLastRow();
   var row = sh.getRange(last, 1, 1, 11).getValues()[0];
-  var ok = row[1] === '__selftest';
-  if (ok) sh.deleteRow(last);
-  return { ok: ok, rowsAfter: sh.getLastRow(), sheetName: SpreadsheetApp.getActive().getName() };
+  var ok = row[1] === '=1+1' && row[10] === 'TEST-TEST';
+  if (row[10] === 'TEST-TEST') sh.deleteRow(last); // 자기 행만 삭제
+  return { ok: ok, formulaSafe: row[1] === '=1+1', rowsAfter: sh.getLastRow() };
+}
+
+/** 시트 수식 주입 방지: =,+,-,@ 등으로 시작하는 문자열을 텍스트로 강제 */
+function deFormula_(v) {
+  v = String(v);
+  return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
 }
 
 function submitResult(r) {
@@ -69,17 +77,17 @@ function submitResult(r) {
       sh.setFrozenRows(1);
     }
     sh.appendRow([
-      String(r.stamp || ''),
-      String(r.name).slice(0, 20),
+      deFormula_(String(r.stamp || '').slice(0, 30)),
+      deFormula_(String(r.name).slice(0, 20)),
       Number(r.week) || 0,
-      String(r.theme || ''),
-      String(r.ref1 || ''),
+      deFormula_(String(r.theme || '').slice(0, 40)),
+      deFormula_(String(r.ref1 || '').slice(0, 40)),
       Number(r.s1) || 0,
-      String(r.ref2 || ''),
+      deFormula_(String(r.ref2 || '').slice(0, 40)),
       Number(r.s2) || 0,
       Number(r.avg) || 0,
       r.pass ? '합격' : '불합격',
-      String(r.code || '')
+      deFormula_(String(r.code || '').slice(0, 20))
     ]);
   } finally {
     lock.releaseLock();

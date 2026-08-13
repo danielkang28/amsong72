@@ -153,6 +153,7 @@ a{color:var(--accent)}
     <div class="card">
       <h2>내 기록</h2>
       <p class="smallmuted">이 휴대폰(브라우저)에 저장된 나의 시험 기록입니다.</p>
+      <p class="smallmuted" id="histStorageNote" hidden>일부 인앱브라우저(카카오톡 등)에서는 기기 기록이 유지되지 않을 수 있습니다. 성적 자체는 제출 즉시 성적표(구글시트)에 자동 저장되니 걱정하지 않으셔도 됩니다.</p>
       <div class="tablewrap"><table class="rec" id="histTable"></table></div>
       <div class="btnrow"><button class="ghost" id="btnClearHist">기록 지우기</button></div>
     </div>
@@ -297,11 +298,13 @@ function parseVerseCode(s){
   if(m){ const n = parseInt(m[1],10); if(n>=1 && n<=72) return n-1; }
   return null;
 }
+let FIRST_SNAPPED = false; /* 홀수 구절(주제 중간)로 시작 지정 시 주제 시작으로 보정했는지 */
 const FIRST_IDX = (function(){
-  const v = parseVerseCode(params.get("v"));
-  if(v !== null) return v;
-  const c = parseVerseCode(CONFIG.firstVerse);
-  return c !== null ? c : 0;
+  let v = parseVerseCode(params.get("v"));
+  if(v === null) v = parseVerseCode(CONFIG.firstVerse);
+  if(v === null) v = 0;
+  if(v % 2 === 1){ v -= 1; FIRST_SNAPPED = true; } /* 주차는 주제(2구절) 단위 — 짝을 맞춰야 이후 계산·표시가 전부 일관됨 */
+  return v;
 })();
 function verseCode(i){ return "ABCDEF"[Math.floor(i/12)] + (i%12+1); }
 const TOWN = (params.get("t") || CONFIG.town || "").slice(0, 20);
@@ -427,6 +430,7 @@ const CUR = clampWeek(rawW);
   $("wkRange").textContent = weekRangeText(CUR) + " · " + wv[0].ref + " / " + wv[1].ref;
   if(rawW < 1) $("startNotice").innerHTML = '<div class="notice">아직 시작 전입니다. 1주차는 ' + utcToYmd(START_SUN) + " (주일)부터 시작해요. 그때까지는 연습으로 미리 준비해요.</div>";
   else if(rawW > TOTAL_WEEKS) $("startNotice").innerHTML = '<div class="notice">36주 과정이 모두 끝났습니다. 수고하셨습니다! 🎉</div>';
+  if(FIRST_SNAPPED) $("startNotice").innerHTML += '<div class="notice">시작 구절은 주제 단위(홀수 번째 구절)로만 지정할 수 있어 ' + verseCode(FIRST_IDX) + '(' + V[FIRST_IDX].ref + ')로 보정했습니다.</div>';
   $("footInfo").innerHTML = "1주차 주일: " + utcToYmd(START_SUN) + " · 1주차 시작 구절: " + verseCode(FIRST_IDX) + " (" + V[FIRST_IDX].ref + ") · 합격 기준: 구절당 " + PASS + "% 이상 · 주차는 매주 일요일(한국시간)에 바뀝니다.<br>"
     + "구절 출처: <a href='https://amsong.sarang.org/m/main.asp' target='_blank' rel='noopener'>사랑의교회 성경암송 72구절</a>";
 })();
@@ -487,7 +491,7 @@ const CUR = clampWeek(rawW);
       + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + diffHtml(wv[1].text, t2)
       + '<h3 style="margin-top:18px">결과 보고</h3><p class="smallmuted" id="autoSaveMsg"></p><div class="resultcard" id="cardText">'+esc(card)+'</div>'
       + '<div class="btnrow"><button class="ghost" id="btnCopy">결과 복사</button><button class="ghost" id="btnShare">공유 (카톡)</button></div>'
-      + '<p class="smallmuted">'+(GAS ? "성적은 자동 저장되며, 카드는 참고용으로 카톡 공유도 가능합니다." : "복사한 결과를 마을장에게 카톡으로 보내 주세요. 확인코드가 있어 임의 수정 여부를 검증할 수 있습니다.")+'</p></div>';
+      + '<p class="smallmuted">'+(GAS ? "성적은 자동 저장되며, 카드는 참고용으로 카톡 공유도 가능합니다." : "복사한 결과를 마을장에게 카톡으로 보내 주세요.")+'</p></div>';
     if(GAS){
       const msgEl = function(){ return $("autoSaveMsg"); };
       msgEl().textContent = "성적표(구글시트)에 저장 중…";
@@ -609,6 +613,7 @@ function renderHist(){
     }).join("");
 }
 renderHist();
+if(GAS) $("histStorageNote").hidden = false; /* 구글 배포는 샌드박스 iframe이라 일부 인앱브라우저에서 localStorage가 휘발됨 */
 (function(){
   let armed = null;
   $("btnClearHist").addEventListener("click", function(){
@@ -642,14 +647,16 @@ renderHist();
     const curSun = snapToSunday(ymdToUtc(kstToday()));          // 이번 주 주일
     const s = utcToYmd(curSun - (N-1)*7*86400000);              // 1주차 주일 역산
     const first = verseCode(((T*2 - (N-1)*2) % 72 + 72) % 72);  // 1주차 시작 구절 역산
-    let url = location.origin + location.pathname + "?s=" + s + "&v=" + first;
+    /* 구글(Apps Script) 배포에서는 페이지가 샌드박스 iframe에서 돌아 location이 실제 주소가 아님 → 서버가 주입한 __URL 사용 */
+    const base = (typeof window.__URL === "string" && window.__URL) || (location.origin + location.pathname);
+    let url = base + "?s=" + s + "&v=" + first;
     if(PASS !== 90) url += "&p=" + PASS;
     if(TOWN) url += "&t=" + encodeURIComponent(TOWN);
     $("fixOut").innerHTML =
       '<h3>맞춰진 주소</h3><div class="resultcard" id="fixUrl">' + esc(url) + "</div>"
       + '<div class="btnrow"><button class="ghost" id="btnFixCopy">주소 복사</button></div>'
       + '<p class="smallmuted">이 주소로 접속하면 이번 주가 ' + N + "주차 · " + esc(V[T*2].theme) + "가 됩니다. 단톡방에 다시 공지해 주세요. "
-      + "파일 자체에 영구 반영하려면 index.html의 CONFIG를 start: \"" + s + "\", firstVerse: \"" + first + "\" 로 바꾸면 됩니다.</p>";
+      + "영구 반영(주소에 덧붙는 설정 없이 기본값으로)은 index.html의 CONFIG를 start: \"" + s + "\", firstVerse: \"" + first + "\" 로 바꾼 뒤 재배포가 필요합니다.</p>";
     $("btnFixCopy").addEventListener("click", function(){ copyText(url, this); });
   });
 })();
