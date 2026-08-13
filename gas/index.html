@@ -399,18 +399,6 @@ function makeCode(name, week, s1, s2, stamp){
   const b = fnv(c, 0x01234567).toString(36).toUpperCase().padStart(7,"0").slice(-4);
   return a + "-" + b;
 }
-function makeCard(name, week, r1, s1, r2, s2, stamp){
-  const avg = Math.round((s1+s2)/2), pass = s1>=PASS && s2>=PASS;
-  return "📖 72구절 암송시험 결과\n"
-    + "이름: " + name + "\n"
-    + "주차: " + week + "주차 · " + weekVerses(week)[0].theme + "\n"
-    + "① " + r1 + " — " + s1 + "%\n"
-    + "② " + r2 + " — " + s2 + "%\n"
-    + "평균 " + avg + "% · " + (pass ? "합격 ✅" : "불합격 ❌") + "\n"
-    + "일시: " + stamp + "\n"
-    + "코드: " + makeCode(name, week, s1, s2, stamp);
-}
-
 /* ---------- 공통 UI ---------- */
 const $ = function(id){ return document.getElementById(id); };
 document.querySelectorAll("nav.tabs button").forEach(function(b){
@@ -476,7 +464,6 @@ const CUR = clampWeek(rawW);
     store.set("am72_name", name);
     const s1 = scoreOf(wv[0].text, t1), s2 = scoreOf(wv[1].text, t2);
     const stamp = kstNowStamp();
-    const card = makeCard(name, w, wv[0].ref, s1, wv[1].ref, s2, stamp);
     const avg = Math.round((s1+s2)/2), pass = s1>=PASS && s2>=PASS;
     /* 기록 저장 */
     let hist = [];
@@ -487,28 +474,26 @@ const CUR = clampWeek(rawW);
     $("testResult").innerHTML =
       '<div class="card"><h2>채점 결과</h2>'
       + '<div class="scorebar"><span class="pct">'+avg+'%</span><span class="pill '+(pass?"good":"bad")+'">'+(pass?"합격":"불합격")+'</span><span class="smallmuted">구절당 '+PASS+'% 이상이면 합격</span></div>'
+      + '<p class="smallmuted" id="autoSaveMsg"></p>'
       + '<h3>① '+esc(wv[0].ref)+' — '+s1+'%</h3>' + diffHtml(wv[0].text, t1)
       + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + diffHtml(wv[1].text, t2)
-      + '<h3 style="margin-top:18px">결과 보고</h3><p class="smallmuted" id="autoSaveMsg"></p><div class="resultcard" id="cardText">'+esc(card)+'</div>'
-      + '<div class="btnrow"><button class="ghost" id="btnCopy">결과 복사</button><button class="ghost" id="btnShare">공유 (카톡)</button></div>'
-      + '<p class="smallmuted">'+(GAS ? "성적은 자동 저장되며, 카드는 참고용으로 카톡 공유도 가능합니다." : "복사한 결과를 마을장에게 카톡으로 보내 주세요.")+'</p></div>';
+      + '</div>';
     if(GAS){
       const msgEl = function(){ return $("autoSaveMsg"); };
-      msgEl().textContent = "성적표(구글시트)에 저장 중…";
-      google.script.run
-        .withSuccessHandler(function(){ if(msgEl()) msgEl().innerHTML = '<span class="pill good">성적표에 자동 저장됨 ✓</span>'; })
-        .withFailureHandler(function(){ if(msgEl()) msgEl().innerHTML = '<span class="pill warn">자동 저장 실패</span> 아래 결과를 복사해 마을장에게 카톡으로 보내 주세요.'; })
-        .submitResult({ name: name, week: w, theme: wv[0].theme, ref1: wv[0].ref, s1: s1, ref2: wv[1].ref, s2: s2, avg: avg, pass: pass, stamp: stamp, code: makeCode(name, w, s1, s2, stamp) });
+      const payload = { name: name, week: w, theme: wv[0].theme, ref1: wv[0].ref, s1: s1, ref2: wv[1].ref, s2: s2, avg: avg, pass: pass, stamp: stamp, code: makeCode(name, w, s1, s2, stamp) };
+      const trySave = function(){
+        if(msgEl()) msgEl().textContent = "성적표(구글시트)에 저장 중…";
+        google.script.run
+          .withSuccessHandler(function(){ if(msgEl()) msgEl().innerHTML = '<span class="pill good">성적표에 자동 저장됨 ✓</span>'; })
+          .withFailureHandler(function(){
+            if(!msgEl()) return;
+            msgEl().innerHTML = '<span class="pill warn">자동 저장 실패</span> <button class="ghost" id="btnRetrySave">다시 저장</button>';
+            $("btnRetrySave").addEventListener("click", trySave);
+          })
+          .submitResult(payload);
+      };
+      trySave();
     }
-    $("btnCopy").addEventListener("click", function(){ copyText(card, this); });
-    $("btnShare").addEventListener("click", function(){
-      const btn = this;
-      if(navigator.share){
-        try{
-          navigator.share({text: card}).catch(function(e){ if(e && e.name !== "AbortError") copyText(card, btn); });
-        }catch(e){ copyText(card, btn); }
-      } else copyText(card, btn);
-    });
     $("testResult").scrollIntoView({behavior:"smooth"});
   });
 })();
