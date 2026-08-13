@@ -31,15 +31,67 @@ function buildQs_(p) {
   return out.join('&');
 }
 
-/** 외부 POST 진입점: JSON 페이로드로 성적 제출(예비 경로) 또는 자가진단 */
+/** 외부 POST 진입점: JSON 페이로드로 성적 제출(예비 경로), 자가진단, 시트 단장 */
 function doPost(e) {
   try {
     var r = JSON.parse(e.postData.contents);
     if (r && r.__selftest) return jsonOut_(selfTest_());
+    if (r && r.__beautify) return jsonOut_(beautify_());
     return jsonOut_(submitResult(r));
   } catch (err) {
     return jsonOut_({ ok: false, error: String(err) });
   }
+}
+
+/** '성적' 시트가 없으면 헤더와 함께 생성 */
+function ensureSheet_(ss) {
+  var sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(SHEET_NAME);
+    sh.appendRow(['제출시각', '이름', '주차', '주제', '구절1', '점수1', '구절2', '점수2', '평균', '결과', '확인코드']);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+/** 성적 시트 단장: 앱과 같은 딥그린 톤. 여러 번 실행해도 안전(멱등) */
+function beautify_() {
+  var ss = SpreadsheetApp.getActive();
+  var sh = ensureSheet_(ss);
+  var maxRows = Math.max(sh.getMaxRows(), 100);
+  sh.setTabColor('#1E5748');
+  sh.setHiddenGridlines(true);
+  /* 헤더 */
+  sh.getRange(1, 1, 1, 11)
+    .setBackground('#1E5748').setFontColor('#FFFFFF').setFontWeight('bold').setFontSize(11)
+    .setVerticalAlignment('middle').setHorizontalAlignment('center');
+  sh.setRowHeight(1, 38);
+  sh.setFrozenRows(1);
+  /* 열 너비 */
+  var widths = [150, 90, 64, 170, 140, 72, 140, 72, 72, 84, 110];
+  for (var i = 0; i < widths.length; i++) sh.setColumnWidth(i + 1, widths[i]);
+  /* 본문 정렬: 숫자·결과·코드는 가운데 */
+  var body = sh.getRange(2, 1, maxRows - 1, 11);
+  body.setVerticalAlignment('middle');
+  [3, 6, 8, 9, 10, 11].forEach(function (c) { sh.getRange(2, c, maxRows - 1, 1).setHorizontalAlignment('center'); });
+  /* 줄무늬 배경 (기존 밴딩 제거 후 재적용) */
+  sh.getBandings().forEach(function (b) { b.remove(); });
+  sh.getRange(1, 1, maxRows, 11)
+    .applyRowBanding(SpreadsheetApp.BandingTheme.GREEN, true, false)
+    .setHeaderRowColor('#1E5748').setFirstRowColor('#FFFFFF').setSecondRowColor('#F2F7F3');
+  /* 조건부 서식: 합격/불합격 배지, 90점 기준 점수 색 */
+  var resRange = sh.getRange(2, 10, maxRows - 1, 1);
+  var scoreRanges = [sh.getRange(2, 6, maxRows - 1, 1), sh.getRange(2, 8, maxRows - 1, 1), sh.getRange(2, 9, maxRows - 1, 1)];
+  sh.setConditionalFormatRules([
+    SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('합격').setBackground('#DFF0E3').setFontColor('#1E6E3C').setBold(true).setRanges([resRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule().whenTextEqualTo('불합격').setBackground('#F6E3DE').setFontColor('#A93D2B').setBold(true).setRanges([resRange]).build(),
+    SpreadsheetApp.newConditionalFormatRule().whenNumberGreaterThanOrEqualTo(90).setFontColor('#1E6E3C').setBold(true).setRanges(scoreRanges).build(),
+    SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(90).setFontColor('#A93D2B').setRanges(scoreRanges).build()
+  ]);
+  /* 헤더 필터 */
+  if (sh.getFilter()) sh.getFilter().remove();
+  sh.getRange(1, 1, maxRows, 11).createFilter();
+  return { ok: true, styled: true };
 }
 
 function jsonOut_(o) {
@@ -69,13 +121,7 @@ function submitResult(r) {
   var lock = LockService.getScriptLock();
   lock.tryLock(5000);
   try {
-    var ss = SpreadsheetApp.getActive();
-    var sh = ss.getSheetByName(SHEET_NAME);
-    if (!sh) {
-      sh = ss.insertSheet(SHEET_NAME);
-      sh.appendRow(['제출시각', '이름', '주차', '주제', '구절1', '점수1', '구절2', '점수2', '평균', '결과', '확인코드']);
-      sh.setFrozenRows(1);
-    }
+    var sh = ensureSheet_(SpreadsheetApp.getActive());
     sh.appendRow([
       deFormula_(String(r.stamp || '').slice(0, 30)),
       deFormula_(String(r.name).slice(0, 20)),
