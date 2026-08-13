@@ -83,6 +83,14 @@ table.rec th{color:var(--muted);font-size:.75rem;letter-spacing:.03em}
 .smallmuted{font-size:.8rem;color:var(--muted)}
 footer.app{margin-top:28px;font-size:.75rem;color:var(--muted);line-height:1.7}
 #testResult{scroll-margin-top:70px}
+.refrow{display:flex;gap:8px;margin-bottom:8px}
+.refrow select{flex:1.3;min-width:0}
+.refrow input{flex:1;min-width:0}
+.audiobtn{padding:6px 14px;font-size:.82rem}
+.qchoice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:.95rem;font-weight:600;padding:11px 14px;border-radius:10px;cursor:pointer;margin-top:8px}
+.qchoice:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.qchoice.qright{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.qchoice.qwrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
 a{color:var(--accent)}
 .segrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .segrow button{border:1px solid var(--line);background:var(--surface);color:var(--muted);font-family:inherit;font-size:.82rem;font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer}
@@ -121,7 +129,7 @@ a{color:var(--accent)}
       <select id="testWeek"></select>
       <div id="testBody"></div>
       <button class="primary" id="btnSubmit">제출하고 채점하기</button>
-      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 채점은 띄어쓰기·문장부호를 빼고 글자 기준으로 비교합니다.</p>
+      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 본문은 띄어쓰기·문장부호를 빼고 글자 기준으로 채점하며, 장절이 틀리면 해당 구절에서 10점이 감점됩니다.</p>
       <div id="formMsg"></div>
     </div>
     <div id="testResult"></div>
@@ -136,6 +144,7 @@ a{color:var(--accent)}
         <button data-mode="card" class="on">암송 카드</button>
         <button data-mode="hint">첫 글자</button>
         <button data-mode="type">써보기</button>
+        <button data-mode="quiz">장절 퀴즈</button>
       </div>
       <div id="pracBody"></div>
     </div>
@@ -330,6 +339,11 @@ function currentWeekRaw(){ return Math.floor((ymdToUtc(kstToday()) - START_SUN) 
 function clampWeek(w){ return Math.min(TOTAL_WEEKS, Math.max(1, w)); }
 function weekVerses(w){ const i = (FIRST_IDX + (w-1)*2) % 72; return [V[i], V[(i+1)%72]]; }
 function weekOfVerse(i){ return Math.floor(((i - FIRST_IDX + 72) % 72) / 2) + 1; }
+/* 장절 채점용: 책 이름 목록과 장절 정규화 ("4:6,7" ≡ "4:6~7" ≡ "4:6-7") */
+const BOOKS = (function(){ const s = []; V.forEach(function(v){ const b = v.ref.split(" ")[0]; if(s.indexOf(b) < 0) s.push(b); }); return s; })();
+function refBook(ref){ return ref.split(" ")[0]; }
+function refChap(ref){ return ref.split(" ").slice(1).join(""); }
+function normChap(s){ return String(s || "").replace(/\s+/g,"").replace(/[~\-–—]/g,",").replace(/：/g,":"); }
 function weekRangeText(w){
   const a = START_SUN + (w-1)*7*86400000, b = a + 6*86400000;
   const f = function(ms){ const d = new Date(ms); return (d.getUTCMonth()+1) + "/" + d.getUTCDate(); };
@@ -401,6 +415,26 @@ function makeCode(name, week, s1, s2, stamp){
 }
 /* ---------- 공통 UI ---------- */
 const $ = function(id){ return document.getElementById(id); };
+
+/* ---------- 음성 재생 (페이지 내 재생, 실패 시 새 창 폴백) ---------- */
+const player = new Audio();
+let playingBtn = null;
+function resetPlayBtn(){ if(playingBtn){ playingBtn.textContent = "▶ 듣기"; playingBtn = null; } }
+player.addEventListener("ended", resetPlayBtn);
+player.addEventListener("error", function(){
+  if(playingBtn){ const src = playingBtn.dataset.mp3; resetPlayBtn(); window.open(src, "_blank"); }
+});
+document.addEventListener("click", function(e){
+  const b = e.target && e.target.closest ? e.target.closest("button[data-mp3]") : null;
+  if(!b) return;
+  if(playingBtn === b && !player.paused){ player.pause(); resetPlayBtn(); return; }
+  resetPlayBtn();
+  playingBtn = b;
+  b.textContent = "■ 정지";
+  player.src = b.dataset.mp3;
+  const p = player.play();
+  if(p && p.catch) p.catch(function(){ const src = b.dataset.mp3; resetPlayBtn(); window.open(src, "_blank"); });
+});
 document.querySelectorAll("nav.tabs button").forEach(function(b){
   b.addEventListener("click", function(){
     document.querySelectorAll("nav.tabs button").forEach(function(x){ x.classList.toggle("on", x===b); });
@@ -415,7 +449,7 @@ const CUR = clampWeek(rawW);
   const wv = weekVerses(CUR);
   $("wkNum").textContent = CUR + "주차";
   $("wkTheme").textContent = wv[0].cat + " · " + wv[0].theme;
-  $("wkRange").textContent = weekRangeText(CUR) + " · " + wv[0].ref + " / " + wv[1].ref;
+  $("wkRange").textContent = weekRangeText(CUR); /* 장절은 시험 문항이므로 여기서 노출하지 않음 */
   if(rawW < 1) $("startNotice").innerHTML = '<div class="notice">아직 시작 전입니다. 1주차는 ' + utcToYmd(START_SUN) + " (주일)부터 시작해요. 그때까지는 연습으로 미리 준비해요.</div>";
   else if(rawW > TOTAL_WEEKS) $("startNotice").innerHTML = '<div class="notice">36주 과정이 모두 끝났습니다. 수고하셨습니다! 🎉</div>';
   if(FIRST_SNAPPED) $("startNotice").innerHTML += '<div class="notice">시작 구절은 주제 단위(홀수 번째 구절)로만 지정할 수 있어 ' + verseCode(FIRST_IDX) + '(' + V[FIRST_IDX].ref + ')로 보정했습니다.</div>';
@@ -436,8 +470,11 @@ const CUR = clampWeek(rawW);
   $("testName").value = store.get("am72_name") || "";
   function renderBody(){
     const wv = weekVerses(parseInt(sel.value,10));
-    $("testBody").innerHTML = wv.map(function(v,k){
-      return '<h3><span class="vref">' + "①②"[k] + " " + esc(v.ref) + '</span> <span class="vtheme">' + esc(v.theme) + "</span></h3>"
+    const bookOpts = '<option value="">성경 (책)</option>' + BOOKS.map(function(b){ return '<option value="'+esc(b)+'">'+esc(b)+"</option>"; }).join("");
+    $("testBody").innerHTML = '<h3><span class="vref">주제</span> ' + esc(wv[0].theme) + "</h3>"
+      + wv.map(function(v,k){
+      return '<h3>' + "①②"[k] + " " + (k===0 ? "첫째" : "둘째") + ' 구절</h3>'
+        + '<div class="refrow"><select id="book'+k+'">'+bookOpts+'</select><input type="text" id="chap'+k+'" placeholder="장:절 (예: 5:17)" autocomplete="off"></div>'
         + '<textarea id="ans'+k+'" placeholder="구절을 기억나는 대로 입력하세요" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>';
     }).join("");
     [0,1].forEach(function(k){
@@ -462,7 +499,15 @@ const CUR = clampWeek(rawW);
     if(!t1 && !t2){ formMsg("답안을 입력해 주세요."); return; }
     formMsg("");
     store.set("am72_name", name);
-    const s1 = scoreOf(wv[0].text, t1), s2 = scoreOf(wv[1].text, t2);
+    /* 채점: 본문 점수에서 장절 오답 시 10점 감점 */
+    const graded = [t1, t2].map(function(t, k){
+      const v = wv[k];
+      const text = scoreOf(v.text, t);
+      const refOk = $("book"+k).value === refBook(v.ref) && normChap($("chap"+k).value) === normChap(refChap(v.ref));
+      const myRef = ($("book"+k).value || "(책 없음)") + " " + ($("chap"+k).value.trim() || "(장절 없음)");
+      return { text: text, refOk: refOk, myRef: myRef, s: Math.max(0, text - (refOk ? 0 : 10)) };
+    });
+    const s1 = graded[0].s, s2 = graded[1].s;
     const stamp = kstNowStamp();
     const avg = Math.round((s1+s2)/2), pass = s1>=PASS && s2>=PASS;
     /* 기록 저장 */
@@ -471,12 +516,16 @@ const CUR = clampWeek(rawW);
     hist.unshift({w:w, stamp:stamp, s1:s1, s2:s2, pass:pass});
     store.set("am72_hist", JSON.stringify(hist.slice(0,200)));
     renderHist();
+    function refLine(k){
+      const g = graded[k];
+      return '<p class="smallmuted">본문 ' + g.text + "% · 장절 " + (g.refOk ? '<span class="pill good">정답 ✓</span>' : '<span class="pill bad">오답 −10점</span> 내 답: ' + esc(g.myRef)) + "</p>";
+    }
     $("testResult").innerHTML =
       '<div class="card"><h2>채점 결과</h2>'
       + '<div class="scorebar"><span class="pct">'+avg+'%</span><span class="pill '+(pass?"good":"bad")+'">'+(pass?"합격":"불합격")+'</span><span class="smallmuted">구절당 '+PASS+'% 이상이면 합격</span></div>'
       + '<p class="smallmuted" id="autoSaveMsg"></p>'
-      + '<h3>① '+esc(wv[0].ref)+' — '+s1+'%</h3>' + diffHtml(wv[0].text, t1)
-      + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + diffHtml(wv[1].text, t2)
+      + '<h3>① '+esc(wv[0].ref)+' — '+s1+'%</h3>' + refLine(0) + diffHtml(wv[0].text, t1)
+      + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + refLine(1) + diffHtml(wv[1].text, t2)
       + '</div>';
     if(GAS){
       const msgEl = function(){ return $("autoSaveMsg"); };
@@ -541,7 +590,7 @@ function fallbackCopy(t){
         return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
           + '<button class="ghost" data-reveal="'+k+'">말씀 보기</button>'
           + '<p class="vtext" id="rv'+k+'" hidden>'+esc(v.text)+'</p>'
-          + '<p class="smallmuted"><a href="'+esc(v.mp3)+'" target="_blank" rel="noopener">🔊 음성으로 듣기</a></p>';
+          + '<p class="smallmuted"><button class="ghost audiobtn" data-mp3="'+esc(v.mp3)+'">▶ 듣기</button></p>';
       }).join("");
       document.querySelectorAll("[data-reveal]").forEach(function(b){
         b.addEventListener("click", function(){
@@ -555,6 +604,8 @@ function fallbackCopy(t){
         return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
           + '<p class="vtext">'+firstCharHtml(v.text)+'</p>';
       }).join("");
+    } else if(mode === "quiz"){
+      startQuiz();
     } else {
       $("pracBody").innerHTML = wv.map(function(v,k){
         return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
@@ -571,6 +622,51 @@ function fallbackCopy(t){
       });
     }
   }
+
+  /* ---- 장절 퀴즈: 선택 주차까지 누적 구절에서 4지선다 10문제 ---- */
+  let qz = null;
+  function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+  function startQuiz(){
+    const w = parseInt(sel.value,10);
+    const pool = [];
+    for(let i=0; i<Math.min(72, w*2); i++) pool.push((FIRST_IDX + i) % 72);
+    qz = { qs: shuffle(pool.slice()).slice(0, Math.min(10, pool.length)), i: 0, ok: 0 };
+    renderQ();
+  }
+  function renderQ(){
+    if(qz.i >= qz.qs.length){
+      $("pracBody").innerHTML = '<h3>장절 퀴즈 결과</h3>'
+        + '<div class="scorebar"><span class="pct">'+qz.ok+' / '+qz.qs.length+'</span><span class="pill '+(qz.ok===qz.qs.length?"good":"warn")+'">'+(qz.ok===qz.qs.length?"만점! 🎉":"다시 도전해 보세요")+'</span></div>'
+        + '<div class="btnrow"><button class="ghost" id="qzRetry">다시 풀기</button></div>';
+      $("qzRetry").addEventListener("click", startQuiz);
+      return;
+    }
+    const idx = qz.qs[qz.i], v = V[idx];
+    /* 오답 후보: 같은 카테고리 우선, 부족하면 전체에서 보충 */
+    const sameCat = [], others = [];
+    V.forEach(function(x, j){ if(j !== idx && x.ref !== v.ref){ (x.c === v.c ? sameCat : others).push(x.ref); } });
+    const wrong = shuffle(sameCat).slice(0, 3);
+    shuffle(others);
+    while(wrong.length < 3 && others.length) wrong.push(others.pop());
+    const choices = shuffle(wrong.concat([v.ref]));
+    $("pracBody").innerHTML = '<h3>문제 ' + (qz.i+1) + ' / ' + qz.qs.length + ' <span class="vtheme">이 말씀의 장절은?</span></h3>'
+      + '<p class="vtext">'+esc(v.text)+'</p>'
+      + choices.map(function(c){ return '<button class="qchoice" data-q="'+esc(c)+'">'+esc(c)+'</button>'; }).join("")
+      + '<p class="smallmuted" id="qzScore">맞춘 개수: '+qz.ok+'</p>';
+    document.querySelectorAll(".qchoice").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(qz.answered) return;
+        qz.answered = true;
+        const right = b.dataset.q === v.ref;
+        if(right) qz.ok++;
+        document.querySelectorAll(".qchoice").forEach(function(x){
+          if(x.dataset.q === v.ref) x.classList.add("qright");
+          else if(x === b) x.classList.add("qwrong");
+        });
+        setTimeout(function(){ qz.answered = false; qz.i++; renderQ(); }, right ? 700 : 1500);
+      });
+    });
+  }
   render();
 })();
 
@@ -582,7 +678,7 @@ function fallbackCopy(t){
     const w = weekOfVerse(i);
     html += "<details><summary><span>"+esc(v.ref)+' <span class="vtheme">'+esc(v.theme)+'</span></span><span class="no">'+w+"주차</span></summary>"
       + '<p class="vtext">'+esc(v.text)+'</p>'
-      + '<p class="smallmuted"><a href="'+esc(v.mp3)+'" target="_blank" rel="noopener">🔊 음성으로 듣기</a></p></details>';
+      + '<p class="smallmuted"><button class="ghost audiobtn" data-mp3="'+esc(v.mp3)+'">▶ 듣기</button></p></details>';
   });
   $("verseList").innerHTML = html;
 })();
