@@ -38,6 +38,7 @@ function doPost(e) {
     if (r && r.__selftest) return jsonOut_(selfTest_());
     if (r && r.__beautify) return jsonOut_(beautify_());
     if (r && r.__dashboard) return jsonOut_(dashboard_());
+    if (r && r.__dashcheck) return jsonOut_(dashCheck_());
     return jsonOut_(submitResult(r));
   } catch (err) {
     return jsonOut_({ ok: false, error: String(err) });
@@ -167,6 +168,24 @@ function dashboard_() {
     .setOption('width', 560).setOption('height', 320)
     .build());
   return { ok: true, dashboard: true };
+}
+
+/** 개요 시트 점검: 테스트 행 1건을 넣고 개요 수식이 오류 없이 계산되는지 읽은 뒤 테스트 행을 지운다 */
+function dashCheck_() {
+  var ss = SpreadsheetApp.getActive();
+  submitResult({ name: '__dashcheck', week: 99, theme: 't', ref1: 'r1', s1: 95, ref2: 'r2', s2: 85, avg: 90, pass: true, stamp: 'test', code: 'TEST-TEST' });
+  SpreadsheetApp.flush();
+  var d = ss.getSheetByName('개요');
+  var errors = [], row2 = null;
+  if (d) {
+    var vals = d.getRange(1, 1, 40, 10).getDisplayValues();
+    row2 = vals[1];
+    vals.forEach(function (row, i) { row.forEach(function (c, j) { if (String(c).charAt(0) === '#') errors.push({ r: i + 1, c: j + 1, v: c }); }); });
+  }
+  var sh = ss.getSheetByName(SHEET_NAME);
+  var last = sh.getLastRow();
+  if (sh.getRange(last, 11).getValue() === 'TEST-TEST') sh.deleteRow(last); // 자기 행만 삭제
+  return { ok: !!d && errors.length === 0, hasDashboard: !!d, errors: errors, row2: row2 };
 }
 
 function jsonOut_(o) {
