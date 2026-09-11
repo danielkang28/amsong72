@@ -596,8 +596,8 @@ function fallbackCopy(t){
     if(mode === "card"){
       $("pracBody").innerHTML = wv.map(function(v,k){
         return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
-          + '<button class="ghost" data-reveal="'+k+'">말씀 보기</button>'
-          + '<p class="vtext" id="rv'+k+'" hidden>'+esc(v.text)+'</p>'
+          + '<button class="ghost" data-reveal="'+k+'">가리기</button>'
+          + '<p class="vtext" id="rv'+k+'">'+esc(v.text)+'</p>'
           + '<p class="smallmuted"><button class="ghost audiobtn" data-mp3="'+esc(v.mp3)+'">▶ 듣기</button></p>';
       }).join("");
       document.querySelectorAll("[data-reveal]").forEach(function(b){

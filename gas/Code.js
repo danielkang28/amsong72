@@ -37,6 +37,7 @@ function doPost(e) {
     var r = JSON.parse(e.postData.contents);
     if (r && r.__selftest) return jsonOut_(selfTest_());
     if (r && r.__beautify) return jsonOut_(beautify_());
+    if (r && r.__dashboard) return jsonOut_(dashboard_());
     return jsonOut_(submitResult(r));
   } catch (err) {
     return jsonOut_({ ok: false, error: String(err) });
@@ -92,6 +93,80 @@ function beautify_() {
   if (sh.getFilter()) sh.getFilter().remove();
   sh.getRange(1, 1, maxRows, 11).createFilter();
   return { ok: true, styled: true };
+}
+
+/** '개요' 시트 생성(있으면 재생성): 리더별 응시 횟수·평균·합격률·최근 제출 + 셀 안 성장 스파크라인 + 주차별 전체 평균 차트.
+ *  전부 '성적' 시트를 참조하는 수식이라 제출이 쌓이면 자동 갱신됨 */
+function dashboard_() {
+  var ss = SpreadsheetApp.getActive();
+  ensureSheet_(ss);
+  var old = ss.getSheetByName('개요');
+  if (old) ss.deleteSheet(old);
+  var sh = ss.insertSheet('개요', 0);
+  var SLOTS = 30;      // 리더 최대 인원
+  var S = "'성적'!";   // 성적 시트 열: A제출시각 B이름 C주차 I평균 J결과
+  sh.setTabColor('#1E5748');
+  sh.setHiddenGridlines(true);
+  sh.setFrozenRows(1);
+
+  sh.getRange('A1:G1').setValues([['이름', '응시 횟수', '평균 점수', '합격 / 응시', '합격률', '최근 제출', '성장 그래프 (주차별 점수)']])
+    .setBackground('#1E5748').setFontColor('#FFFFFF').setFontWeight('bold').setFontSize(11)
+    .setVerticalAlignment('middle').setHorizontalAlignment('center');
+  sh.setRowHeight(1, 38);
+
+  sh.getRange('A2').setFormula('=IFERROR(SORT(UNIQUE(FILTER(' + S + 'B2:B,' + S + 'B2:B<>""))),"")');
+  var rows = [];
+  for (var r = 2; r < 2 + SLOTS; r++) {
+    var A = '$A' + r, B = 'B' + r;
+    rows.push([
+      '=IF(' + A + '="","",COUNTIF(' + S + '$B:$B,' + A + '))',
+      '=IF(' + A + '="","",ROUND(AVERAGEIF(' + S + '$B:$B,' + A + ',' + S + '$I:$I),1))',
+      '=IF(' + A + '="","",COUNTIFS(' + S + '$B:$B,' + A + ',' + S + '$J:$J,"합격")&" / "&' + B + ')',
+      '=IF(' + A + '="","",ROUND(100*COUNTIFS(' + S + '$B:$B,' + A + ',' + S + '$J:$J,"합격")/' + B + ')&"%")',
+      '=IF(' + A + '="","",INDEX(SORT(FILTER(' + S + '$A$2:$A,' + S + '$B$2:$B=' + A + '),1,FALSE),1))',
+      '=IF(' + A + '="","",IFERROR(SPARKLINE(SORT(FILTER({' + S + '$C$2:$C,' + S + '$I$2:$I},' + S + '$B$2:$B=' + A + '),1,TRUE),{"charttype","line";"linewidth",2;"color","#1E5748";"ymin",0;"ymax",100}),""))'
+    ]);
+  }
+  sh.getRange(2, 2, SLOTS, 6).setFormulas(rows);
+
+  [96, 72, 84, 96, 72, 150, 260].forEach(function (w, i) { sh.setColumnWidth(i + 1, w); });
+  sh.setRowHeights(2, SLOTS, 34);
+  sh.getRange(2, 1, SLOTS, 7).setVerticalAlignment('middle');
+  sh.getRange(2, 1, SLOTS, 1).setFontWeight('bold');
+  sh.getRange(2, 2, SLOTS, 5).setHorizontalAlignment('center');
+  sh.getBandings().forEach(function (b) { b.remove(); });
+  sh.getRange(1, 1, SLOTS + 1, 7).applyRowBanding(SpreadsheetApp.BandingTheme.GREEN, true, false)
+    .setHeaderRowColor('#1E5748').setFirstRowColor('#FFFFFF').setSecondRowColor('#F2F7F3');
+  var avgR = sh.getRange(2, 3, SLOTS, 1);
+  sh.setConditionalFormatRules([
+    SpreadsheetApp.newConditionalFormatRule().whenNumberGreaterThanOrEqualTo(90).setFontColor('#1E6E3C').setBold(true).setRanges([avgR]).build(),
+    SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(90).setFontColor('#A93D2B').setRanges([avgR]).build()
+  ]);
+
+  /* 주차별 전체 평균 (차트 데이터) */
+  sh.getRange('I1:J1').setValues([['주차', '전체 평균']]).setFontWeight('bold').setFontColor('#5F6A64');
+  sh.getRange('I2').setFormula('=SEQUENCE(36)');
+  var wk = [];
+  for (var w = 2; w <= 37; w++) {
+    wk.push(['=IF(COUNTIF(' + S + '$C:$C,$I' + w + ')=0,"",ROUND(AVERAGEIF(' + S + '$C:$C,$I' + w + ',' + S + '$I:$I),1))']);
+  }
+  sh.getRange(2, 10, 36, 1).setFormulas(wk);
+  sh.setColumnWidth(9, 50);
+  sh.setColumnWidth(10, 76);
+  sh.getRange(2, 9, 36, 2).setHorizontalAlignment('center').setFontColor('#5F6A64');
+  sh.insertChart(sh.newChart().setChartType(Charts.ChartType.LINE)
+    .addRange(sh.getRange('I1:J37'))
+    .setPosition(2, 12, 0, 0)
+    .setOption('title', '주차별 전체 평균 점수')
+    .setOption('legend', { position: 'none' })
+    .setOption('colors', ['#1E5748'])
+    .setOption('interpolateNulls', true)
+    .setOption('pointSize', 5)
+    .setOption('vAxis', { minValue: 0, maxValue: 100, title: '점수' })
+    .setOption('hAxis', { title: '주차' })
+    .setOption('width', 560).setOption('height', 320)
+    .build());
+  return { ok: true, dashboard: true };
 }
 
 function jsonOut_(o) {
