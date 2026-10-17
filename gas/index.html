@@ -38,7 +38,10 @@ header.app{padding:20px 0 4px}
 .weekcard .theme{font-size:1.05rem;font-weight:600;margin-top:2px}
 .weekcard .range{opacity:.85;font-size:.85rem;margin-top:6px}
 .notice{font-size:.85rem;color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:8px 12px;margin:8px 0}
-nav.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:12px;margin:14px 0;position:sticky;top:8px;z-index:5}
+nav.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:12px;margin:14px 0}
+/* 모바일(특히 iOS 인앱브라우저 iframe)에서는 sticky가 키보드 닫힌 뒤 터치 좌표 어긋남을 유발하므로 넓은 화면에서만 고정 */
+@media (min-width:700px){nav.tabs{position:sticky;top:8px;z-index:5}}
+button,input,select,textarea{touch-action:manipulation}
 nav.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:.85rem;font-weight:600;padding:9px 2px;border-radius:9px;cursor:pointer}
 nav.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
@@ -82,7 +85,12 @@ table.rec th{color:var(--muted);font-size:.75rem;letter-spacing:.03em}
 .hintword{margin-right:.4em;letter-spacing:.06em}
 .smallmuted{font-size:.8rem;color:var(--muted)}
 footer.app{margin-top:28px;font-size:.75rem;color:var(--muted);line-height:1.7}
-#testResult{scroll-margin-top:70px}
+#testResult{scroll-margin-top:12px}
+@media (min-width:700px){#testResult{scroll-margin-top:70px}}
+.codebox{border:1px dashed var(--line);font-size:.92rem;line-height:1.7}
+.sharebox{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+.sharebox summary{cursor:pointer;font-weight:600;font-size:.9rem;color:var(--accent);list-style:none}
+.sharebox summary::-webkit-details-marker{display:none}
 .refinput{margin-bottom:8px}
 .audiobtn{padding:6px 14px;font-size:.82rem}
 .qchoice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:.95rem;font-weight:600;padding:11px 14px;border-radius:10px;cursor:pointer;margin-top:8px}
@@ -145,6 +153,12 @@ a{color:var(--accent)}
         <button data-mode="quiz">장절 퀴즈</button>
       </div>
       <div id="pracBody"></div>
+      <details class="sharebox" id="shareBox">
+        <summary id="shareSummary">📋 톡방용 구절 복사</summary>
+        <p class="smallmuted">아래 내용을 복사해 단톡방에 붙여넣으세요.</p>
+        <div class="resultcard codebox" id="shareText"></div>
+        <div class="btnrow"><button class="ghost" id="btnShareCopy">복사</button></div>
+      </details>
     </div>
   </section>
 
@@ -423,6 +437,14 @@ function makeCode(name, week, s1, s2, stamp){
 }
 /* ---------- 공통 UI ---------- */
 const $ = function(id){ return document.getElementById(id); };
+/* 모바일 키보드 대응: 버튼 탭으로는 iOS에서 입력칸 포커스가 안 풀려 키보드가 열린 채 레이아웃이 바뀌면
+   터치 좌표가 어긋남 → 먼저 포커스를 풀어 키보드를 닫고 잠시 뒤 화면을 바꾼다 */
+function blurActive(){ const a = document.activeElement; if(a && a !== document.body && a.blur) a.blur(); }
+function afterKeyboard(fn){ blurActive(); setTimeout(fn, 80); }
+/* 키보드가 닫힌 뒤 iframe 뷰포트가 어긋난 채 남는 WebKit 버그 보정: 스크롤을 제자리에서 한 번 흔들어 재계산 */
+document.addEventListener("focusout", function(){
+  setTimeout(function(){ const x = window.scrollX, y = window.scrollY; window.scrollTo(x, y + 1); window.scrollTo(x, y); }, 250);
+});
 
 /* ---------- 음성 재생 (페이지 내 재생, 실패 시 새 창 폴백) ---------- */
 const player = new Audio();
@@ -506,6 +528,7 @@ const CUR = clampWeek(rawW);
     const t1 = $("ans0").value.trim(), t2 = $("ans1").value.trim();
     if(!t1 && !t2){ formMsg("답안을 입력해 주세요."); return; }
     formMsg("");
+    afterKeyboard(function(){
     store.set("am72_name", name);
     /* 채점: 본문 점수에서 장절 오답 시 10점 감점 */
     const graded = [t1, t2].map(function(t, k){
@@ -534,7 +557,12 @@ const CUR = clampWeek(rawW);
       + '<p class="smallmuted" id="autoSaveMsg"></p>'
       + '<h3>① '+esc(wv[0].ref)+' — '+s1+'%</h3>' + refLine(0) + diffHtml(wv[0].text, t1)
       + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + refLine(1) + diffHtml(wv[1].text, t2)
+      + '<div class="btnrow"><button class="ghost" id="btnRetake">다시 시험 보기</button></div>'
       + '</div>';
+    $("btnRetake").addEventListener("click", function(){
+      renderBody();
+      $("panel-test").scrollIntoView({behavior:"smooth"});
+    });
     if(GAS){
       const msgEl = function(){ return $("autoSaveMsg"); };
       const payload = { name: name, week: w, theme: wv[0].theme, ref1: wv[0].ref, s1: s1, ref2: wv[1].ref, s2: s2, avg: avg, pass: pass, stamp: stamp, code: makeCode(name, w, s1, s2, stamp) };
@@ -552,6 +580,7 @@ const CUR = clampWeek(rawW);
       trySave();
     }
     $("testResult").scrollIntoView({behavior:"smooth"});
+    });
   });
 })();
 function copyText(t, btn){
@@ -591,8 +620,14 @@ function fallbackCopy(t){
       return '<span class="hintword">' + esc(w[0]) + "·".repeat(Math.max(0, w.length-1)) + "</span>";
     }).join("");
   }
+  function renderShare(wv, w){
+    $("shareSummary").textContent = "📋 톡방용 구절 복사 · " + w + "주차 " + wv[0].theme;
+    $("shareText").textContent = wv.map(function(v){ return v.ref + "\n" + v.text; }).join("\n\n");
+  }
+  $("btnShareCopy").addEventListener("click", function(){ copyText($("shareText").textContent, this); });
   function render(){
-    const wv = weekVerses(parseInt(sel.value,10));
+    const w = parseInt(sel.value,10), wv = weekVerses(w);
+    renderShare(wv, w);
     if(mode === "card"){
       $("pracBody").innerHTML = wv.map(function(v,k){
         return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
@@ -624,8 +659,14 @@ function fallbackCopy(t){
       document.querySelectorAll("[data-check]").forEach(function(b){
         b.addEventListener("click", function(){
           const k = parseInt(b.dataset.check,10), v = wv[k], t = $("pa"+k).value.trim();
-          const s = scoreOf(v.text, t);
-          $("pr"+k).innerHTML = '<div class="scorebar"><span class="pct">'+s+'%</span><span class="pill '+(s>=PASS?"good":"bad")+'">'+(s>=PASS?"합격권":"더 연습")+"</span></div>" + diffHtml(v.text, t);
+          afterKeyboard(function(){
+            const s = scoreOf(v.text, t);
+            $("pr"+k).innerHTML = '<div class="scorebar"><span class="pct">'+s+'%</span><span class="pill '+(s>=PASS?"good":"bad")+'">'+(s>=PASS?"합격권":"더 연습")+"</span></div>" + diffHtml(v.text, t)
+              + '<div class="btnrow"><button class="ghost" data-again="'+k+'">다시 써보기</button></div>';
+            $("pr"+k).querySelector("[data-again]").addEventListener("click", function(){
+              $("pa"+k).value = ""; $("pr"+k).innerHTML = ""; $("pa"+k).focus();
+            });
+          });
         });
       });
     }
