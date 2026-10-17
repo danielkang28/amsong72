@@ -352,12 +352,12 @@ function clampWeek(w){ return Math.min(TOTAL_WEEKS, Math.max(1, w)); }
 function weekVerses(w){ const i = (FIRST_IDX + (w-1)*2) % 72; return [V[i], V[(i+1)%72]]; }
 function weekOfVerse(i){ return Math.floor(((i - FIRST_IDX + 72) % 72) / 2) + 1; }
 /* 장절 채점: 직접 타이핑한 장절을 채점. 표준 약자("롬 6:23")와 "6장 23절" 표기도 인정.
-   장절 정규화: "4:6,7" ≡ "4:6~7" ≡ "4:6-7" ≡ "4장 6절~7절" */
+   장절 정규화: "4:6,7" ≡ "4:6~7" ≡ "4:6-7" ≡ "4장 6절~7절" (시편은 "119편 9절"도 인정) */
 const ABBR = {"고린도후서":"고후","갈라디아서":"갈","로마서":"롬","요한복음":"요","디모데후서":"딤후","여호수아":"수","빌립보서":"빌","마태복음":"마","히브리서":"히","이사야":"사","베드로전서":"벧전","에베소서":"엡","디도서":"딛","요한계시록":"계","요한일서":"요일","고린도전서":"고전","예레미야애가":"애","민수기":"민","시편":"시","누가복음":"눅","마가복음":"막","잠언":"잠","사도행전":"행","레위기":"레","골로새서":"골"};
 function refBook(ref){ return ref.split(" ")[0]; }
 function refChap(ref){ return ref.split(" ").slice(1).join(""); }
 function normChap(s){
-  return String(s || "").replace(/\s+/g,"").replace(/장/g,":").replace(/절/g,"").replace(/[~\-–—]/g,",").replace(/：/g,":");
+  return String(s || "").replace(/\s+/g,"").replace(/[장편]/g,":").replace(/절/g,"").replace(/[~\-–—]/g,",").replace(/：/g,":");
 }
 function refMatches(input, ref){
   const m = String(input || "").trim().match(/^([^\d]+?)\s*(\d.*)$/); /* 책 이름 + 숫자로 시작하는 장절 */
