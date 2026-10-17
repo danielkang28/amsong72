@@ -16,16 +16,6 @@
     --good:#7CC98F; --good-soft:#1F3A28; --bad:#E08A76; --bad-soft:#42241D; --warn:#D9B863; --warn-soft:#3A301F;
   }
 }
-:root[data-theme="dark"]{
-  --bg:#141A18; --surface:#1C2422; --surface2:#232D2A; --ink:#E6ECE8; --muted:#9AA8A0;
-  --accent:#6FBFA3; --accent-ink:#0F1F1A; --accent-soft:#24463C; --line:#2E3A36;
-  --good:#7CC98F; --good-soft:#1F3A28; --bad:#E08A76; --bad-soft:#42241D; --warn:#D9B863; --warn-soft:#3A301F;
-}
-:root[data-theme="light"]{
-  --bg:#F6F7F4; --surface:#FFFFFF; --surface2:#EEF1EC; --ink:#22282B; --muted:#5F6A64;
-  --accent:#1E5748; --accent-ink:#FFFFFF; --accent-soft:#DDE9E2; --line:#DDE2DC;
-  --good:#1E6E3C; --good-soft:#DFF0E3; --bad:#A93D2B; --bad-soft:#F6E3DE; --warn:#6F5518; --warn-soft:#F3EBD6;
-}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-ui);line-height:1.6;-webkit-font-smoothing:antialiased}
 .wrap{max-width:560px;margin:0 auto;padding:0 16px 64px}
@@ -42,7 +32,7 @@ nav.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radi
 /* 모바일(특히 iOS 인앱브라우저 iframe)에서는 sticky가 키보드 닫힌 뒤 터치 좌표 어긋남을 유발하므로 넓은 화면에서만 고정 */
 @media (min-width:700px){nav.tabs{position:sticky;top:8px;z-index:5}}
 button,input,select,textarea{touch-action:manipulation}
-nav.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:.85rem;font-weight:600;padding:9px 2px;border-radius:9px;cursor:pointer}
+nav.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font-family:inherit;font-size:.85rem;font-weight:600;padding:11px 2px;border-radius:9px;cursor:pointer}
 nav.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 section.panel{display:none}
@@ -50,19 +40,19 @@ section.panel.on{display:block}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
 .card h2{font-size:1rem;margin:0 0 10px}
 .card h3{font-size:.92rem;margin:14px 0 6px}
-.label{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:10px 0 4px;text-transform:uppercase}
+.label{display:block;font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.04em;margin:10px 0 4px}
 input[type=text],textarea,select{width:100%;font-family:inherit;font-size:1rem;color:var(--ink);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 textarea{min-height:110px;resize:vertical;line-height:1.7}
 input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 button.primary{width:100%;border:0;background:var(--accent);color:var(--accent-ink);font-family:inherit;font-size:1rem;font-weight:700;padding:13px;border-radius:11px;cursor:pointer;margin-top:12px}
-button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:.9rem;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer}
+button.ghost{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:.9rem;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;min-height:40px}
 button.primary:focus-visible,button.ghost:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .vref{font-size:.85rem;font-weight:700;color:var(--accent);letter-spacing:.02em}
 .vtheme{font-size:.8rem;color:var(--muted)}
 .vtext{font-family:var(--font-verse);font-size:1.06rem;line-height:1.9;margin:8px 0 0;word-break:keep-all}
 .scorebar{display:flex;align-items:center;gap:10px;margin-top:10px}
 .scorebar .pct{font-size:1.5rem;font-weight:800;font-variant-numeric:tabular-nums}
-.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:999px}
+.pill{display:inline-block;font-size:.82rem;font-weight:700;padding:3px 10px;border-radius:999px}
 .pill.good{background:var(--good-soft);color:var(--good)}
 .pill.bad{background:var(--bad-soft);color:var(--bad)}
 .pill.warn{background:var(--warn-soft);color:var(--warn)}
@@ -76,14 +66,16 @@ button.primary:focus-visible,button.ghost:focus-visible{outline:2px solid var(--
 .verselist details:last-child{border-bottom:0}
 .verselist summary{cursor:pointer;font-weight:600;font-size:.95rem;padding:6px 0;list-style:none;display:flex;justify-content:space-between;gap:8px}
 .verselist summary::-webkit-details-marker{display:none}
-.verselist summary .no{color:var(--muted);font-weight:500;font-size:.8rem;white-space:nowrap}
+.verselist summary .no{color:var(--muted);font-weight:500;font-size:.8rem;white-space:nowrap;margin-left:auto}
+.verselist summary::after,.sharebox summary::after{content:"▸";color:var(--muted);margin-left:6px;flex:none}
+.verselist details[open] > summary::after,.sharebox[open] > summary::after{content:"▾"}
 .cathead{margin:18px 0 4px;font-size:.85rem;font-weight:800;color:var(--accent);letter-spacing:.03em}
 table.rec{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
 table.rec th,table.rec td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
-table.rec th{color:var(--muted);font-size:.75rem;letter-spacing:.03em}
+table.rec th{color:var(--muted);font-size:.8rem;letter-spacing:.03em}
 .tablewrap{overflow-x:auto}
 .hintword{margin-right:.4em;letter-spacing:.06em}
-.smallmuted{font-size:.8rem;color:var(--muted)}
+.smallmuted{font-size:.875rem;color:var(--muted)}
 footer.app{margin-top:28px;font-size:.75rem;color:var(--muted);line-height:1.7}
 #testResult{scroll-margin-top:12px}
 @media (min-width:700px){#testResult{scroll-margin-top:70px}}
@@ -92,7 +84,8 @@ footer.app{margin-top:28px;font-size:.75rem;color:var(--muted);line-height:1.7}
 .sharebox summary{cursor:pointer;font-weight:600;font-size:.9rem;color:var(--accent);list-style:none}
 .sharebox summary::-webkit-details-marker{display:none}
 .refinput{margin-bottom:8px}
-.audiobtn{padding:6px 14px;font-size:.82rem}
+.audiobtn{padding:9px 16px;font-size:.82rem}
+.mp3note{margin-left:8px}
 .qchoice{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-family:inherit;font-size:.95rem;font-weight:600;padding:11px 14px;border-radius:10px;cursor:pointer;margin-top:8px}
 .qchoice:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .qchoice.qright{background:var(--good-soft);border-color:var(--good);color:var(--good)}
@@ -118,15 +111,15 @@ a{color:var(--accent)}
     <div id="startNotice"></div>
   </header>
 
-  <nav class="tabs" id="tabs">
-    <button data-tab="test" class="on">시험</button>
-    <button data-tab="practice">연습</button>
-    <button data-tab="verses">구절집</button>
-    <button data-tab="history">기록</button>
-    <button data-tab="admin">관리</button>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button data-tab="test" class="on" role="tab" aria-selected="true">시험</button>
+    <button data-tab="practice" role="tab" aria-selected="false">연습</button>
+    <button data-tab="verses" role="tab" aria-selected="false">구절집</button>
+    <button data-tab="history" role="tab" aria-selected="false">기록</button>
+    <button data-tab="admin" role="tab" aria-selected="false">마을장</button>
   </nav>
 
-  <section class="panel on" id="panel-test">
+  <section class="panel on" id="panel-test" role="tabpanel">
     <div class="card">
       <h2>이번 주 시험</h2>
       <label class="label" for="testName">이름</label>
@@ -135,13 +128,13 @@ a{color:var(--accent)}
       <select id="testWeek"></select>
       <div id="testBody"></div>
       <button class="primary" id="btnSubmit">제출하고 채점하기</button>
-      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 본문은 띄어쓰기·문장부호를 빼고 글자 기준으로 채점하며, 장절이 틀리면 해당 구절에서 10점이 감점됩니다. 장절은 "로마서 6:23"처럼 적으세요 — 약자("롬 6:23")와 "6장 23절" 표기도 인정됩니다.</p>
+      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 본문은 띄어쓰기·문장부호를 빼고 글자 기준으로 채점하며, 장절을 비우거나 틀리면 해당 구절에서 10점 감점됩니다. 장절은 "로마서 6:23"처럼 적으세요 — 약자("롬 6:23")와 "6장 23절" 표기도 인정됩니다.</p>
       <div id="formMsg"></div>
     </div>
     <div id="testResult"></div>
   </section>
 
-  <section class="panel" id="panel-practice">
+  <section class="panel" id="panel-practice" role="tabpanel">
     <div class="card">
       <h2>연습</h2>
       <label class="label" for="pracWeek">주차 선택</label>
@@ -162,15 +155,16 @@ a{color:var(--accent)}
     </div>
   </section>
 
-  <section class="panel" id="panel-verses">
+  <section class="panel" id="panel-verses" role="tabpanel">
     <div class="card">
       <h2>72구절 전체</h2>
       <p class="smallmuted">사랑의교회 성경암송 72구절 (출처: amsong.sarang.org)</p>
+      <button class="ghost" id="btnVerseNow">이번 주 구절로 이동</button>
       <div class="verselist" id="verseList"></div>
     </div>
   </section>
 
-  <section class="panel" id="panel-history">
+  <section class="panel" id="panel-history" role="tabpanel">
     <div class="card">
       <h2>내 기록</h2>
       <p class="smallmuted">이 휴대폰(브라우저)에 저장된 나의 시험 기록입니다.</p>
@@ -180,11 +174,11 @@ a{color:var(--accent)}
     </div>
   </section>
 
-  <section class="panel" id="panel-admin">
+  <section class="panel" id="panel-admin" role="tabpanel">
     <div class="card">
       <h2>진도 맞추기</h2>
       <p class="smallmuted" id="fixCurrent"></p>
-      <p class="smallmuted">교회 진도와 어긋났을 때 사용하세요. 이번 주에 해당하는 주제를 고르면, 진도가 맞춰진 공유용 주소를 만들어 드립니다. 그 주소를 단톡방에 다시 공지하면 모두에게 적용됩니다.</p>
+      <p class="smallmuted">앱의 '이번 주'가 교회 진도와 다를 때만 사용하세요. 교회에서 이번 주에 하는 주제와 주차를 고르면 진도가 맞춰진 새 주소를 만들어 드립니다. 그 주소를 단톡방에 공지하면 모두에게 똑같이 적용됩니다.</p>
       <label class="label" for="fixTheme">이번 주 주제</label>
       <select id="fixTheme"></select>
       <label class="label" for="fixWeekNo">이번 주를 몇 주차로 표시할까요</label>
@@ -199,6 +193,18 @@ a{color:var(--accent)}
 
 <script>
 "use strict";
+/* ===== 목차 =====
+   1. 데이터: 72구절(addCat 블록) — 수정 금지
+   2. 설정·URL 파라미터: CONFIG, APP_VERSION, ?s= ?v= ?p= ?t=
+   3. 날짜·주차: kstToday, currentWeekRaw, weekVerses, weekLabel
+   4. 장절 채점: refMatches
+   5. 본문 채점: scoreOf, diffHtml, gradeWeek
+   6. 확인코드: makeCode
+   7. 공통 UI·오디오: afterKeyboard, scorebarHtml, fillWeekSelect, 듣기 버튼, 탭 전환
+   8. 탭별 init: 헤더 / 시험(resultCardHtml, saveToSheet) / 연습 / 구절집
+   9. 기록: loadHist, pushHist, renderHist
+  10. 진도 맞추기(마을장 탭)
+   규칙: 이 파일은 GAS(Apps Script)와 GitHub Pages 양쪽에 그대로 서빙되므로 외부 css/js 파일 참조 금지. 배포는 루트의 deploy.ps1. */
 /* ---------- 데이터: 사랑의교회 72구절 (amsong.sarang.org) ---------- */
 const CATS = {A:"새로운 삶",B:"그리스도를 전파함",C:"하나님을 의뢰함",D:"그리스도 제자의 자격",E:"그리스도를 닮아감",F:"온전한 인격"};
 const V = [];
@@ -294,14 +300,18 @@ const CONFIG = {
   start: "2026-09-06",  // 1주차 주일 (일요일, YYYY-MM-DD)
   firstVerse: "B11",    // 1주차에 시작할 구절 — 2026-09-06 주간 진도가 B11·B12(구원의 확신)라서 여기에 맞춤. F12 다음은 A1로 순환
   pass: 90,             // 구절당 합격 기준 %
-  town: ""              // 마을 이름 (선택)
+  town: "",             // 마을 이름 (선택)
+  officialUrl: "https://script.google.com/macros/s/AKfycbwCbl2SnhEF1fj-zf35ptta4p3bqzP1YLrb4OQdVk8GTlFtR_w7ewfGu5WZY2z1bWyt/exec" // 성적표 자동 저장이 되는 공식 주소
 };
+const APP_VERSION = "2026-10-18a"; /* 배포할 때마다 바꿈 — 푸터와 성적표 '버전' 열에 기록 */
 /* URL 파라미터 ?s= ?v= ?p= ?t= 로도 덮어쓸 수 있음. Apps Script 배포에서는 서버가 window.__QS로 주입 */
 const params = new URLSearchParams((typeof window.__QS === "string" && window.__QS) || location.search);
 const GAS = typeof google !== "undefined" && google.script && google.script.run; /* 구글시트(Apps Script) 배포 여부 */
 function validYmd(s){ return /^\d{4}-\d{2}-\d{2}$/.test(s) && utcToYmd(ymdToUtc(s)) === s; }
-const sParam = params.get("s") || "";
-const RAW_START = validYmd(sParam) ? sParam : (validYmd(CONFIG.start) ? CONFIG.start : "2026-08-09");
+const START_CONFIG_OK = validYmd(CONFIG.start);
+if(!START_CONFIG_OK) console.error("설정 오류: CONFIG.start 형식(YYYY-MM-DD)을 확인하세요 — 현재 값: " + CONFIG.start);
+/* 1주차 주일: ?s= → CONFIG.start → (둘 다 무효면) 오늘이 속한 주를 1주차로 */
+const RAW_START = validYmd(params.get("s") || "") ? params.get("s") : (START_CONFIG_OK ? CONFIG.start : kstToday());
 /* localStorage가 막힌 환경(일부 임베드 뷰어)에서도 앱이 죽지 않도록 감싼다 */
 const store = {
   get: function(k){ try{ return window.localStorage.getItem(k); }catch(e){ return null; } },
@@ -348,7 +358,12 @@ function kstNowStamp(){ // "YYYY-MM-DD HH:MM" (Asia/Seoul)
 function snapToSunday(ms){ return ms - new Date(ms).getUTCDay() * 86400000; }
 const START_SUN = snapToSunday(ymdToUtc(RAW_START));
 function currentWeekRaw(){ return Math.floor((ymdToUtc(kstToday()) - START_SUN) / (7 * 86400000)) + 1; }
-function clampWeek(w){ return Math.min(TOTAL_WEEKS, Math.max(1, w)); }
+function clampWeek(w){ return Math.max(1, w); } /* 상한 없음: 36주 이후에도 누적 주차(37, 38…)로 계속 진행, 구절은 weekVerses가 순환 */
+/* 화면 표기용 주차: 36주 이하 "N주차", 이후 "R회차 N주차" (저장·계산은 누적 주차 그대로) */
+function weekLabel(w){
+  if(w <= TOTAL_WEEKS) return w + "주차";
+  return (Math.floor((w-1)/TOTAL_WEEKS) + 1) + "회차 " + ((w-1) % TOTAL_WEEKS + 1) + "주차";
+}
 function weekVerses(w){ const i = (FIRST_IDX + (w-1)*2) % 72; return [V[i], V[(i+1)%72]]; }
 function weekOfVerse(i){ return Math.floor(((i - FIRST_IDX + 72) % 72) / 2) + 1; }
 /* 장절 채점: 직접 타이핑한 장절을 채점. 표준 약자("롬 6:23")와 "6장 23절" 표기도 인정.
@@ -422,6 +437,17 @@ function diffHtml(expected, typed){
   const got = d.T.length ? d.T.map(function(w,k){ return d.tMark[k] ? esc(w) : '<span class="extra">'+esc(w)+"</span>"; }).join(" ") : '<span class="extra">(입력 없음)</span>';
   return '<h3>정답 (틀린 부분 표시)</h3><p class="diff">'+exp+'</p><h3>내 답안</h3><p class="diff">'+got+"</p>";
 }
+/* 한 주차(2구절) 채점 — DOM 접근 없는 순수 함수. 본문 점수에서 장절 오답(빈칸 포함) 시 10점 감점 */
+function gradeWeek(wv, texts, refs){
+  const graded = wv.map(function(v, k){
+    const text = scoreOf(v.text, texts[k]);
+    const refIn = String(refs[k] || "").trim();
+    const refOk = refMatches(refIn, v.ref);
+    return { text: text, refOk: refOk, myRef: refIn || "(미입력)", s: Math.max(0, text - (refOk ? 0 : 10)) };
+  });
+  const s1 = graded[0].s, s2 = graded[1].s;
+  return { graded: graded, s1: s1, s2: s2, avg: Math.round((s1+s2)/2), pass: s1>=PASS && s2>=PASS };
+}
 
 /* ---------- 확인코드 ---------- */
 function fnv(str, seed){
@@ -445,29 +471,59 @@ function afterKeyboard(fn){ blurActive(); setTimeout(fn, 80); }
 document.addEventListener("focusout", function(){
   setTimeout(function(){ const x = window.scrollX, y = window.scrollY; window.scrollTo(x, y + 1); window.scrollTo(x, y); }, 250);
 });
+/* 점수 막대: pct는 표시 문자열("85%", "7 / 10"), kind는 pill 색(good/bad/warn), note는 선택 보조 문구 */
+function scorebarHtml(pct, kind, label, note){
+  return '<div class="scorebar"><span class="pct">' + pct + '</span><span class="pill ' + kind + '">' + label + "</span>"
+    + (note ? '<span class="smallmuted">' + note + "</span>" : "") + "</div>";
+}
+/* 주차 select 채우기(1..maxW). withTheme이면 주제와 '(이번 주)' 표시 */
+function fillWeekSelect(sel, maxW, withTheme){
+  for(let w=1; w<=maxW; w++){
+    const o = document.createElement("option");
+    o.value = w;
+    o.textContent = weekLabel(w) + (withTheme ? " · " + weekVerses(w)[0].theme + (w===CUR && rawW>=1 ? " (이번 주)" : "") : "");
+    sel.appendChild(o);
+  }
+  sel.value = CUR;
+}
+/* 공식(GAS) 주소가 아닐 때 안내 — 이 주소에서는 성적표 저장이 안 됨 */
+const NON_GAS_WARN = '이 주소에서는 성적표 자동 저장이 되지 않습니다. 공식 주소로 접속해 주세요: <a href="' + esc(CONFIG.officialUrl) + '" target="_top">공식 주소 열기</a>';
 
 /* ---------- 음성 재생 (페이지 내 재생, 실패 시 새 창 폴백) ---------- */
 const player = new Audio();
 let playingBtn = null;
 function resetPlayBtn(){ if(playingBtn){ playingBtn.textContent = "▶ 듣기"; playingBtn = null; } }
+/* 페이지 내 재생 실패 시: 버튼 옆에 안내 한 줄을 남기고 mp3를 새 창으로 연다 */
+function mp3Fallback(b){
+  const src = b.dataset.mp3;
+  if(playingBtn === b) resetPlayBtn();
+  let note = b.nextElementSibling;
+  if(!note || !note.classList.contains("mp3note")){
+    note = document.createElement("span");
+    note.className = "smallmuted mp3note";
+    b.insertAdjacentElement("afterend", note);
+  }
+  note.textContent = "재생이 안 돼 새 창으로 엽니다";
+  window.open(src, "_blank");
+}
 player.addEventListener("ended", resetPlayBtn);
-player.addEventListener("error", function(){
-  if(playingBtn){ const src = playingBtn.dataset.mp3; resetPlayBtn(); window.open(src, "_blank"); }
-});
+player.addEventListener("playing", function(){ if(playingBtn) playingBtn.textContent = "■ 정지"; });
+player.addEventListener("error", function(){ if(playingBtn) mp3Fallback(playingBtn); });
 document.addEventListener("click", function(e){
   const b = e.target && e.target.closest ? e.target.closest("button[data-mp3]") : null;
   if(!b) return;
-  if(playingBtn === b && !player.paused){ player.pause(); resetPlayBtn(); return; }
+  if(playingBtn === b){ player.pause(); resetPlayBtn(); return; } /* 불러오는 중이든 재생 중이든 같은 버튼 재탭 = 정지 */
   resetPlayBtn();
   playingBtn = b;
-  b.textContent = "■ 정지";
+  b.textContent = "⏳ 불러오는 중…";
   player.src = b.dataset.mp3;
   const p = player.play();
-  if(p && p.catch) p.catch(function(){ const src = b.dataset.mp3; resetPlayBtn(); window.open(src, "_blank"); });
+  /* 사용자가 이미 정지했거나 다른 구절로 바꿔 생긴 중단(AbortError)은 무시 */
+  if(p && p.catch) p.catch(function(){ if(playingBtn === b) mp3Fallback(b); });
 });
 document.querySelectorAll("nav.tabs button").forEach(function(b){
   b.addEventListener("click", function(){
-    document.querySelectorAll("nav.tabs button").forEach(function(x){ x.classList.toggle("on", x===b); });
+    document.querySelectorAll("nav.tabs button").forEach(function(x){ x.classList.toggle("on", x===b); x.setAttribute("aria-selected", x===b ? "true" : "false"); });
     document.querySelectorAll("section.panel").forEach(function(p){ p.classList.toggle("on", p.id === "panel-"+b.dataset.tab); });
   });
 });
@@ -477,34 +533,91 @@ const CUR = clampWeek(rawW);
 (function renderHeader(){
   if(TOWN) $("townName").textContent = TOWN;
   const wv = weekVerses(CUR);
-  $("wkNum").textContent = CUR + "주차";
+  $("wkNum").textContent = weekLabel(CUR);
   $("wkTheme").textContent = wv[0].cat + " · " + wv[0].theme;
   $("wkRange").textContent = weekRangeText(CUR); /* 장절은 시험 문항이므로 여기서 노출하지 않음 */
-  if(rawW < 1) $("startNotice").innerHTML = '<div class="notice">아직 시작 전입니다. 1주차는 ' + utcToYmd(START_SUN) + " (주일)부터 시작해요. 그때까지는 연습으로 미리 준비해요.</div>";
-  else if(rawW > TOTAL_WEEKS) $("startNotice").innerHTML = '<div class="notice">36주 과정이 모두 끝났습니다. 수고하셨습니다! 🎉</div>';
+  if(!START_CONFIG_OK) $("startNotice").innerHTML += '<div class="notice">설정 오류: CONFIG.start 형식(YYYY-MM-DD)을 확인하세요</div>';
+  if(rawW < 1) $("startNotice").innerHTML += '<div class="notice">아직 시작 전입니다. 1주차는 ' + utcToYmd(START_SUN) + " (주일)부터 시작해요. 그때까지는 연습으로 미리 준비해요.</div>";
   if(FIRST_SNAPPED) $("startNotice").innerHTML += '<div class="notice">시작 구절은 주제 단위(홀수 번째 구절)로만 지정할 수 있어 ' + verseCode(FIRST_IDX) + '(' + V[FIRST_IDX].ref + ')로 보정했습니다.</div>';
+  if(!GAS) $("startNotice").innerHTML += '<div class="notice">' + NON_GAS_WARN + "</div>";
   $("footInfo").innerHTML = "1주차 주일: " + utcToYmd(START_SUN) + " · 1주차 시작 구절: " + verseCode(FIRST_IDX) + " (" + V[FIRST_IDX].ref + ") · 합격 기준: 구절당 " + PASS + "% 이상 · 주차는 매주 일요일(한국시간)에 바뀝니다.<br>"
-    + "구절 출처: <a href='https://amsong.sarang.org/m/main.asp' target='_blank' rel='noopener'>사랑의교회 성경암송 72구절</a>";
+    + "구절 출처: <a href='https://amsong.sarang.org/m/main.asp' target='_blank' rel='noopener'>사랑의교회 성경암송 72구절</a> · v" + APP_VERSION;
 })();
 
 /* ---------- 시험 탭 ---------- */
+/* 채점 결과 카드 HTML. g는 gradeWeek 결과 */
+function resultCardHtml(wv, texts, g, stamp, w){
+  function refLine(k){
+    const r = g.graded[k];
+    return '<p class="smallmuted">본문 ' + r.text + "% · 장절 " + (r.refOk ? '<span class="pill good">정답 ✓</span>' : '<span class="pill bad">오답 −10점</span> 내 답: ' + esc(r.myRef)) + "</p>";
+  }
+  return '<div class="card"><h2>채점 결과</h2>'
+    + '<p class="smallmuted">' + weekLabel(w) + " · " + esc(wv[0].theme) + " · " + esc(stamp) + "</p>"
+    + scorebarHtml(g.avg + "%", g.pass ? "good" : "bad", g.pass ? "합격" : "불합격", "구절당 " + PASS + "% 이상이면 합격")
+    + '<p class="smallmuted" id="autoSaveMsg"></p>'
+    + '<h3>① '+esc(wv[0].ref)+' — '+g.s1+'%</h3>' + refLine(0) + diffHtml(wv[0].text, texts[0])
+    + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+g.s2+'%</h3>' + refLine(1) + diffHtml(wv[1].text, texts[1])
+    + '<div class="btnrow"><button class="ghost" id="btnRetake">다시 시험 보기</button></div>'
+    + '</div>';
+}
+/* 저장 실패 시 단톡방에 붙여 넣을 결과 한 줄 */
+function resultLine(r){
+  return r.name + " · " + weekLabel(r.week) + " · ① " + r.s1 + "% ② " + r.s2 + "% · " + (r.pass ? "합격" : "불합격") + " · " + r.stamp + " · 코드 " + r.code;
+}
+/* 성적표(구글시트) 저장 — GAS 전용. 시도마다 20초 타임아웃(응답 없으면 실패 UI), 이후 늦게 성공이 오면 성공 UI로 덮어씀.
+   onDone(null)=저장 시도 시작, onDone(true)=저장됨(중복 포함), onDone(false)=실패·타임아웃 */
+function saveToSheet(payload, getMsgEl, onDone){
+  let saved = false;
+  function show(html){ const el = getMsgEl(); if(el) el.innerHTML = html; return el; }
+  function fail(){
+    if(saved) return;
+    const el = show('<span class="pill warn">자동 저장 실패</span> <button class="ghost" data-save="retry">다시 저장</button> <button class="ghost" data-save="copy">결과 한 줄 복사</button><br>저장이 계속 안 되면 이 줄을 단톡방에 붙여 주세요.');
+    if(el){
+      el.querySelector('[data-save="retry"]').addEventListener("click", attempt);
+      el.querySelector('[data-save="copy"]').addEventListener("click", function(){ copyText(resultLine(payload), this); });
+    }
+    onDone(false);
+  }
+  function attempt(){
+    let open = true; /* 이 시도가 아직 결론(응답/타임아웃) 나지 않음 */
+    show("성적표(구글시트)에 저장 중…");
+    onDone(null);
+    const timer = setTimeout(function(){ if(open){ open = false; fail(); } }, 20000);
+    google.script.run
+      .withSuccessHandler(function(res){
+        clearTimeout(timer); open = false;
+        if(saved) return;
+        saved = true;
+        show('<span class="pill good">' + (res && res.dup ? "이미 저장된 제출입니다 ✓" : "성적표에 자동 저장됨 ✓") + "</span>");
+        onDone(true);
+      })
+      .withFailureHandler(function(){
+        clearTimeout(timer);
+        if(!open) return;
+        open = false;
+        fail();
+      })
+      .submitResult(payload);
+  }
+  attempt();
+}
 (function initTest(){
   const sel = $("testWeek");
-  for(let w=1; w<=CUR; w++){
-    const o = document.createElement("option");
-    o.value = w;
-    o.textContent = w + "주차 · " + weekVerses(w)[0].theme + (w===CUR && rawW===CUR ? " (이번 주)" : "");
-    sel.appendChild(o);
-  }
-  sel.value = CUR;
+  fillWeekSelect(sel, CUR, true);
   $("testName").value = store.get("am72_name") || "";
+  const FIELDS = [["ref0","첫째 구절 장절"],["ans0","첫째 구절 본문"],["ref1","둘째 구절 장절"],["ans1","둘째 구절 본문"]];
+  let submitting = false, emptyArmed = null;
+  function setSubmitBtn(disabled, text){ const b = $("btnSubmit"); b.disabled = disabled; b.textContent = text; }
   function renderBody(){
     const wv = weekVerses(parseInt(sel.value,10));
     $("testBody").innerHTML = '<h3><span class="vref">주제</span> ' + esc(wv[0].theme) + "</h3>"
       + wv.map(function(v,k){
-      return '<h3>' + "①②"[k] + " " + (k===0 ? "첫째" : "둘째") + ' 구절</h3>'
-        + '<input type="text" id="ref'+k+'" class="refinput" placeholder="장절 (예: 로마서 6:23)" autocomplete="off">'
-        + '<textarea id="ans'+k+'" placeholder="구절을 기억나는 대로 입력하세요" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>';
+      const ord = k===0 ? "첫째" : "둘째";
+      return '<h3>' + "①②"[k] + " " + ord + ' 구절</h3>'
+        + '<label class="label" for="ref'+k+'">장절 (필수 · 예: 로마서 6:23)</label>'
+        + '<input type="text" id="ref'+k+'" class="refinput" placeholder="장절 (예: 로마서 6:23)" aria-label="'+ord+' 구절 장절" autocomplete="off">'
+        + '<label class="label" for="ans'+k+'">본문</label>'
+        + '<textarea id="ans'+k+'" placeholder="구절을 기억나는 대로 입력하세요" aria-label="'+ord+' 구절 본문" autocomplete="off" autocorrect="off" spellcheck="false"></textarea>';
     }).join("");
     [0,1].forEach(function(k){
       [$("ans"+k), $("ref"+k)].forEach(function(el){
@@ -516,70 +629,59 @@ const CUR = clampWeek(rawW);
       });
     });
     $("testResult").innerHTML = "";
+    setSubmitBtn(false, "제출하고 채점하기"); /* 새 입력칸이 생겼으므로 제출 잠금 해제 */
+    submitting = false;
+    if(emptyArmed){ clearTimeout(emptyArmed); emptyArmed = null; } /* 빈칸 확인 대기 초기화 */
+    sel.disabled = false;
   }
   sel.addEventListener("change", renderBody);
   renderBody();
 
   function formMsg(t){ $("formMsg").innerHTML = t ? '<div class="notice">'+t+"</div>" : ""; }
   $("btnSubmit").addEventListener("click", function(){
+    if(submitting) return; /* 80ms 지연 중 연타 차단 */
     const name = $("testName").value.trim().replace(/\|/g,"").replace(/📖/g,"").replace(/[\r\n]/g," ").slice(0,15);
     if(!name){ formMsg("이름을 입력해 주세요."); $("testName").focus(); return; }
     const w = parseInt(sel.value,10), wv = weekVerses(w);
-    const t1 = $("ans0").value.trim(), t2 = $("ans1").value.trim();
-    if(!t1 && !t2){ formMsg("답안을 입력해 주세요."); return; }
+    const texts = [$("ans0").value.trim(), $("ans1").value.trim()];
+    const refs = [$("ref0").value.trim(), $("ref1").value.trim()];
+    if(!texts[0] && !texts[1]){ formMsg("답안을 입력해 주세요."); return; }
+    /* 빈 칸이 있으면 한 번 확인(4초 안에 다시 누르면 그대로 제출) */
+    const empty = FIELDS.filter(function(f){ return !$(f[0]).value.trim(); }).map(function(f){ return f[1]; });
+    if(empty.length && !emptyArmed){
+      formMsg("비어 있는 칸: " + empty.join(", ") + ". 비우면 본문 0점·장절 −10점 처리됩니다. 그대로 제출하려면 4초 안에 한 번 더 누르세요.");
+      emptyArmed = setTimeout(function(){ emptyArmed = null; }, 4000);
+      return;
+    }
+    if(emptyArmed){ clearTimeout(emptyArmed); emptyArmed = null; }
     formMsg("");
+    submitting = true;
+    setSubmitBtn(true, "채점 중…");
     afterKeyboard(function(){
-    store.set("am72_name", name);
-    /* 채점: 본문 점수에서 장절 오답 시 10점 감점 */
-    const graded = [t1, t2].map(function(t, k){
-      const v = wv[k];
-      const text = scoreOf(v.text, t);
-      const refIn = $("ref"+k).value.trim();
-      const refOk = refMatches(refIn, v.ref);
-      return { text: text, refOk: refOk, myRef: refIn || "(미입력)", s: Math.max(0, text - (refOk ? 0 : 10)) };
-    });
-    const s1 = graded[0].s, s2 = graded[1].s;
-    const stamp = kstNowStamp();
-    const avg = Math.round((s1+s2)/2), pass = s1>=PASS && s2>=PASS;
-    /* 기록 저장 */
-    let hist = [];
-    try{ hist = JSON.parse(store.get("am72_hist") || "[]"); }catch(e){}
-    hist.unshift({w:w, stamp:stamp, s1:s1, s2:s2, pass:pass});
-    store.set("am72_hist", JSON.stringify(hist.slice(0,200)));
-    renderHist();
-    function refLine(k){
-      const g = graded[k];
-      return '<p class="smallmuted">본문 ' + g.text + "% · 장절 " + (g.refOk ? '<span class="pill good">정답 ✓</span>' : '<span class="pill bad">오답 −10점</span> 내 답: ' + esc(g.myRef)) + "</p>";
-    }
-    $("testResult").innerHTML =
-      '<div class="card"><h2>채점 결과</h2>'
-      + '<div class="scorebar"><span class="pct">'+avg+'%</span><span class="pill '+(pass?"good":"bad")+'">'+(pass?"합격":"불합격")+'</span><span class="smallmuted">구절당 '+PASS+'% 이상이면 합격</span></div>'
-      + '<p class="smallmuted" id="autoSaveMsg"></p>'
-      + '<h3>① '+esc(wv[0].ref)+' — '+s1+'%</h3>' + refLine(0) + diffHtml(wv[0].text, t1)
-      + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+s2+'%</h3>' + refLine(1) + diffHtml(wv[1].text, t2)
-      + '<div class="btnrow"><button class="ghost" id="btnRetake">다시 시험 보기</button></div>'
-      + '</div>';
-    $("btnRetake").addEventListener("click", function(){
-      renderBody();
-      $("panel-test").scrollIntoView({behavior:"smooth"});
-    });
-    if(GAS){
-      const msgEl = function(){ return $("autoSaveMsg"); };
-      const payload = { name: name, week: w, theme: wv[0].theme, ref1: wv[0].ref, s1: s1, ref2: wv[1].ref, s2: s2, avg: avg, pass: pass, stamp: stamp, code: makeCode(name, w, s1, s2, stamp) };
-      const trySave = function(){
-        if(msgEl()) msgEl().textContent = "성적표(구글시트)에 저장 중…";
-        google.script.run
-          .withSuccessHandler(function(){ if(msgEl()) msgEl().innerHTML = '<span class="pill good">성적표에 자동 저장됨 ✓</span>'; })
-          .withFailureHandler(function(){
-            if(!msgEl()) return;
-            msgEl().innerHTML = '<span class="pill warn">자동 저장 실패</span> <button class="ghost" id="btnRetrySave">다시 저장</button>';
-            $("btnRetrySave").addEventListener("click", trySave);
-          })
-          .submitResult(payload);
-      };
-      trySave();
-    }
-    $("testResult").scrollIntoView({behavior:"smooth"});
+      try{
+        store.set("am72_name", name);
+        const stamp = kstNowStamp(), g = gradeWeek(wv, texts, refs), code = makeCode(name, w, g.s1, g.s2, stamp);
+        pushHist({w:w, stamp:stamp, s1:g.s1, s2:g.s2, pass:g.pass, code:code, saved:false});
+        $("testResult").innerHTML = resultCardHtml(wv, texts, g, stamp, w);
+        FIELDS.forEach(function(f){ $(f[0]).readOnly = true; });
+        setSubmitBtn(true, "제출 완료 — 아래 결과를 확인하세요");
+        submitting = false;
+        const msg = $("autoSaveMsg"), retake = $("btnRetake");
+        retake.addEventListener("click", function(){ renderBody(); $("panel-test").scrollIntoView({behavior:"smooth"}); });
+        if(GAS){
+          const payload = { name: name, week: w, theme: wv[0].theme, ref1: wv[0].ref, s1: g.s1, ref2: wv[1].ref, s2: g.s2, avg: g.avg, pass: g.pass, stamp: stamp, code: code, start: utcToYmd(START_SUN), ver: APP_VERSION };
+          /* 이 결과 카드의 요소만 갱신(다시 시험 후 새 카드에 늦은 응답이 섞이지 않게) */
+          saveToSheet(payload, function(){ return msg.isConnected ? msg : null; }, function(ok){
+            const pending = ok === null;
+            retake.disabled = pending; /* 저장 대기 중에는 다시 시험 잠금 */
+            sel.disabled = pending;    /* 저장 대기 중에는 응시 주차 변경 잠금 */
+            if(ok) markHistSaved(code);
+          });
+        } else msg.innerHTML = NON_GAS_WARN;
+        $("testResult").scrollIntoView({behavior:"smooth"});
+      } finally {
+        submitting = false; /* 채점·렌더 중 예외가 나도 재진입 플래그는 반드시 해제 */
+      }
     });
   });
 })();
@@ -599,13 +701,7 @@ function fallbackCopy(t){
 /* ---------- 연습 탭 ---------- */
 (function initPractice(){
   const sel = $("pracWeek");
-  for(let w=1; w<=TOTAL_WEEKS; w++){
-    const o = document.createElement("option");
-    o.value = w;
-    o.textContent = w + "주차 · " + weekVerses(w)[0].theme + (w===CUR && rawW===CUR ? " (이번 주)" : "");
-    sel.appendChild(o);
-  }
-  sel.value = CUR;
+  fillWeekSelect(sel, Math.max(TOTAL_WEEKS, CUR), true);
   let mode = "card";
   document.querySelectorAll("#pracModes button").forEach(function(b){
     b.addEventListener("click", function(){
@@ -621,7 +717,7 @@ function fallbackCopy(t){
     }).join("");
   }
   function renderShare(wv, w){
-    $("shareSummary").textContent = "📋 톡방용 구절 복사 · " + w + "주차 " + wv[0].theme;
+    $("shareSummary").textContent = "📋 톡방용 구절 복사 · " + weekLabel(w) + " " + wv[0].theme;
     $("shareText").textContent = wv.map(function(v){ return v.ref + "\n" + v.text; }).join("\n\n");
   }
   $("btnShareCopy").addEventListener("click", function(){ copyText($("shareText").textContent, this); });
@@ -661,7 +757,7 @@ function fallbackCopy(t){
           const k = parseInt(b.dataset.check,10), v = wv[k], t = $("pa"+k).value.trim();
           afterKeyboard(function(){
             const s = scoreOf(v.text, t);
-            $("pr"+k).innerHTML = '<div class="scorebar"><span class="pct">'+s+'%</span><span class="pill '+(s>=PASS?"good":"bad")+'">'+(s>=PASS?"합격권":"더 연습")+"</span></div>" + diffHtml(v.text, t)
+            $("pr"+k).innerHTML = scorebarHtml(s + "%", s>=PASS ? "good" : "bad", s>=PASS ? "합격권" : "더 연습") + diffHtml(v.text, t)
               + '<div class="btnrow"><button class="ghost" data-again="'+k+'">다시 써보기</button></div>';
             $("pr"+k).querySelector("[data-again]").addEventListener("click", function(){
               $("pa"+k).value = ""; $("pr"+k).innerHTML = ""; $("pa"+k).focus();
@@ -685,7 +781,7 @@ function fallbackCopy(t){
   function renderQ(){
     if(qz.i >= qz.qs.length){
       $("pracBody").innerHTML = '<h3>장절 퀴즈 결과</h3>'
-        + '<div class="scorebar"><span class="pct">'+qz.ok+' / '+qz.qs.length+'</span><span class="pill '+(qz.ok===qz.qs.length?"good":"warn")+'">'+(qz.ok===qz.qs.length?"만점! 🎉":"다시 도전해 보세요")+'</span></div>'
+        + scorebarHtml(qz.ok + " / " + qz.qs.length, qz.ok===qz.qs.length ? "good" : "warn", qz.ok===qz.qs.length ? "만점! 🎉" : "다시 도전해 보세요")
         + '<div class="btnrow"><button class="ghost" id="qzRetry">다시 풀기</button></div>';
       $("qzRetry").addEventListener("click", startQuiz);
       return;
@@ -721,25 +817,45 @@ function fallbackCopy(t){
 
 /* ---------- 구절집 탭 ---------- */
 (function initVerses(){
+  const curInCycle = (CUR-1) % TOTAL_WEEKS + 1; /* 구절집 'N주차'는 사이클 내 번호(1..36) */
   let html = "", lastCat = "";
   V.forEach(function(v, i){
     if(v.c !== lastCat){ lastCat = v.c; html += '<div class="cathead">'+v.c+". "+esc(v.cat)+"</div>"; }
-    const w = weekOfVerse(i);
-    html += "<details><summary><span>"+esc(v.ref)+' <span class="vtheme">'+esc(v.theme)+'</span></span><span class="no">'+w+"주차</span></summary>"
+    const w = weekOfVerse(i), now = rawW >= 1 && w === curInCycle; /* 시작 전에는 '이번 주' 없음 */
+    html += "<details" + (now ? ' open class="thisweek"' : "") + "><summary><span>"+esc(v.ref)+' <span class="vtheme">'+esc(v.theme)+'</span>'
+      + (now ? ' <span class="pill good">이번 주</span>' : "") + '</span><span class="no">'+w+"주차</span></summary>"
       + '<p class="vtext">'+esc(v.text)+'</p>'
       + '<p class="smallmuted"><button class="ghost audiobtn" data-mp3="'+esc(v.mp3)+'">▶ 듣기</button></p></details>';
   });
   $("verseList").innerHTML = html;
+  $("btnVerseNow").hidden = !document.querySelector("#verseList details.thisweek"); /* 이동할 '이번 주'가 없으면 버튼 숨김 */
+  $("btnVerseNow").addEventListener("click", function(){
+    const d = document.querySelector("#verseList details.thisweek");
+    if(d){ d.open = true; d.scrollIntoView({behavior:"smooth", block:"start"}); }
+  });
 })();
 
 /* ---------- 기록 탭 ---------- */
+function loadHist(){
+  try{ const h = JSON.parse(store.get("am72_hist") || "[]"); return Array.isArray(h) ? h : []; }catch(e){ return []; }
+}
+function saveHist(hist){ store.set("am72_hist", JSON.stringify(hist.slice(0,200))); }
+function pushHist(entry){ const hist = loadHist(); hist.unshift(entry); saveHist(hist); renderHist(); }
+/* 성적표 저장 성공 → 같은 확인코드 기록을 saved=true로 */
+function markHistSaved(code){
+  const hist = loadHist();
+  let changed = false;
+  hist.forEach(function(h){ if(h.code === code && !h.saved){ h.saved = true; changed = true; } });
+  if(changed){ saveHist(hist); renderHist(); }
+}
 function renderHist(){
-  let hist = [];
-  try{ hist = JSON.parse(store.get("am72_hist") || "[]"); }catch(e){}
+  const hist = loadHist();
   if(!hist.length){ $("histTable").innerHTML = '<tr><td class="smallmuted">아직 기록이 없습니다.</td></tr>'; return; }
-  $("histTable").innerHTML = "<tr><th>주차</th><th>일시</th><th>①</th><th>②</th><th>결과</th></tr>"
+  /* '저장' 열은 GAS 모드에서만. 확인코드가 없는 예전 기록은 저장 여부를 알 수 없어 '–' */
+  $("histTable").innerHTML = "<tr><th>주차</th><th>일시</th><th>①</th><th>②</th><th>결과</th>" + (GAS ? "<th>저장</th>" : "") + "</tr>"
     + hist.map(function(h){
-      return "<tr><td>"+h.w+"주차</td><td>"+esc(h.stamp)+"</td><td>"+h.s1+"%</td><td>"+h.s2+'%</td><td><span class="pill '+(h.pass?"good":"bad")+'">'+(h.pass?"합격":"불합격")+"</span></td></tr>";
+      return "<tr><td>"+weekLabel(h.w)+"</td><td>"+esc(h.stamp)+"</td><td>"+h.s1+"%</td><td>"+h.s2+'%</td><td><span class="pill '+(h.pass?"good":"bad")+'">'+(h.pass?"합격":"불합격")+"</span></td>"
+        + (GAS ? "<td>" + (h.saved ? "✓" : (h.code ? '<span class="pill warn">미전송</span>' : "–")) + "</td>" : "") + "</tr>";
     }).join("");
 }
 renderHist();
@@ -757,21 +873,16 @@ if(GAS) $("histStorageNote").hidden = false; /* 구글 배포는 샌드박스 if
 /* ---------- 진도 맞추기 (마을장) ---------- */
 (function initFix(){
   const curThemeIdx = Math.floor(((FIRST_IDX + (CUR-1)*2) % 72) / 2); // 지금 앱이 이번 주로 보는 주제(0~35)
-  $("fixCurrent").textContent = "현재 설정: 이번 주 = " + CUR + "주차 · " + weekVerses(CUR)[0].theme + " (" + weekVerses(CUR)[0].ref + " / " + weekVerses(CUR)[1].ref + ")";
+  $("fixCurrent").textContent = "현재 설정: 이번 주 = " + weekLabel(CUR) + " · " + weekVerses(CUR)[0].theme + " (" + weekVerses(CUR)[0].ref + " / " + weekVerses(CUR)[1].ref + ")";
   const selT = $("fixTheme"), selN = $("fixWeekNo");
-  for(let t=0; t<36; t++){
+  for(let t=0; t<TOTAL_WEEKS; t++){ /* 주제 수 = 72/2 = TOTAL_WEEKS */
     const a = V[t*2], o = document.createElement("option");
     o.value = t;
     o.textContent = a.c + ". " + a.theme + " — " + a.ref + " / " + V[t*2+1].ref;
     selT.appendChild(o);
   }
   selT.value = curThemeIdx;
-  for(let n=1; n<=TOTAL_WEEKS; n++){
-    const o = document.createElement("option");
-    o.value = n; o.textContent = n + "주차";
-    selN.appendChild(o);
-  }
-  selN.value = CUR;
+  fillWeekSelect(selN, Math.max(TOTAL_WEEKS, CUR), false);
   $("btnFix").addEventListener("click", function(){
     const T = parseInt(selT.value,10), N = parseInt(selN.value,10);
     const curSun = snapToSunday(ymdToUtc(kstToday()));          // 이번 주 주일
@@ -785,8 +896,8 @@ if(GAS) $("histStorageNote").hidden = false; /* 구글 배포는 샌드박스 if
     $("fixOut").innerHTML =
       '<h3>맞춰진 주소</h3><div class="resultcard" id="fixUrl">' + esc(url) + "</div>"
       + '<div class="btnrow"><button class="ghost" id="btnFixCopy">주소 복사</button></div>'
-      + '<p class="smallmuted">이 주소로 접속하면 이번 주가 ' + N + "주차 · " + esc(V[T*2].theme) + "가 됩니다. 단톡방에 다시 공지해 주세요. "
-      + "영구 반영(주소에 덧붙는 설정 없이 기본값으로)은 index.html의 CONFIG를 start: \"" + s + "\", firstVerse: \"" + first + "\" 로 바꾼 뒤 재배포가 필요합니다.</p>";
+      + '<p class="smallmuted">이 주소로 접속하면 이번 주가 ' + weekLabel(N) + " · " + esc(V[T*2].theme) + "가 됩니다. "
+      + "이 주소는 마을장만 단톡방에 공지하세요. 바꾼 뒤에는 모두가 새 주소를 쓰도록 안내해 주세요.</p>";
     $("btnFixCopy").addEventListener("click", function(){ copyText(url, this); });
   });
 })();

@@ -1,0 +1,74 @@
+/** 주간 미제출 알림(이메일) — 준비만 해 둔 코드. 지금은 .txt라 clasp push 대상이 아니다.
+ *
+ *  왜 아직 안 넣었나: MailApp·ScriptApp.newTrigger는 새 OAuth 권한(메일 발송·트리거)을 요구한다.
+ *  권한 승인 전에 이 코드가 들어간 버전으로 redeploy하면 웹앱이 403이 된다.
+ *
+ *  적용 절차 (순서 중요):
+ *   1) 이 파일 이름을 gas/Reminder.js로 바꿔 push:  cd gas; clasp push -f
+ *      (Code.js의 SHEET_NAME·COL·TOTAL_WEEKS·FINAL·ymd_·currentStart_를 그대로 쓰므로 같은 프로젝트에 있어야 한다)
+ *   2) Apps Script 편집기에서 installReminderTrigger 를 1회 실행 → 권한 승인 화면에서 허용
+ *      (installTrigger_ 처럼 이름이 _로 끝나는 함수는 편집기 실행 목록에 안 보이고 트리거 대상도 될 수 없어서
+ *       공개 래퍼 installReminderTrigger / weeklyReminder 를 함께 둔다)
+ *   3) 그다음 redeploy: 저장소 루트에서 .\deploy.ps1 -Msg "주간 미제출 알림 추가"
+ *
+ *  동작: 매주 토요일 20시(스크립트 시간대 Asia/Seoul)에 '성적' 시트에서
+ *   현재 텀(M열 최신 1주차주일)과 이번 주차(현재 텀 '최종' 행의 최대 주차)를 구해,
+ *   현재 텀에 제출 이력이 있는 이름(B열 고유값) 중 이번 주차 '최종' 행이 없는 사람을 모아 스크립트 소유자에게 메일로 보낸다.
+ */
+
+/** 트리거가 부르는 공개 래퍼 */
+function weeklyReminder() { return weeklyReminder_(); }
+
+/** 편집기에서 1회 실행하는 공개 래퍼 */
+function installReminderTrigger() { return installTrigger_(); }
+
+function weeklyReminder_() {
+  var sh = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+  if (!sh || sh.getLastRow() < 2) return { ok: true, sent: false, reason: '데이터 없음' };
+  var n = sh.getLastRow() - 1;
+  var data = sh.getRange(2, COL.name, n, COL.start - COL.name + 1).getValues();
+  var at = function (row, k) { return row[COL[k] - COL.name]; };
+  var start = currentStart_(sh);
+
+  /* 이번 주차 = 현재 텀 '최종' 행의 최대 주차 */
+  var week = 0;
+  data.forEach(function (row) {
+    if (at(row, 'rep') === FINAL && ymd_(at(row, 'start')) === start) week = Math.max(week, Number(at(row, 'week')) || 0);
+  });
+  if (!week) return { ok: true, sent: false, reason: '현재 텀 제출 없음' };
+
+  /* 현재 텀에 제출 이력이 있는 이름(B 고유값, 첫 등장 순) / 이번 주차 '최종' 제출자 */
+  var names = [], seen = {}, done = {};
+  data.forEach(function (row) {
+    var nm = String(at(row, 'name'));
+    if (nm && !seen[nm] && ymd_(at(row, 'start')) === start) { seen[nm] = true; names.push(nm); }
+    if (at(row, 'rep') === FINAL && ymd_(at(row, 'start')) === start && Number(at(row, 'week')) === week) done[nm] = true;
+  });
+  var missing = names.filter(function (nm) { return !done[nm]; });
+
+  var label = week > TOTAL_WEEKS
+    ? (Math.floor((week - 1) / TOTAL_WEEKS) + 1) + '회차 ' + ((week - 1) % TOTAL_WEEKS + 1) + '주차'
+    : week + '주차';
+  var oneLine = missing.length ? '[' + label + ' 미제출] ' + missing.join(', ') : '[' + label + '] 미제출 없음';
+  var body = [
+    label + ' 미제출 ' + missing.length + '명' + (missing.length ? ':' : ''),
+    missing.map(function (nm) { return ' - ' + nm; }).join('\n'),
+    '',
+    '톡방 붙여넣기용:',
+    oneLine,
+    '',
+    '(현재 텀 1주차 주일: ' + start + ' · 이번 주차는 이 텀에서 제출된 가장 큰 주차 기준)'
+  ].join('\n');
+  MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '[암송] ' + label + ' 미제출 ' + missing.length + '명', body);
+  return { ok: true, sent: true, week: week, missing: missing.length };
+}
+
+/** 기존 알림 트리거를 지우고 매주 토요일 20시 트리거를 새로 만든다(여러 번 실행해도 1개만 유지) */
+function installTrigger_() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var h = t.getHandlerFunction();
+    if (h === 'weeklyReminder' || h === 'weeklyReminder_') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('weeklyReminder').timeBased().onWeekDay(ScriptApp.WeekDay.SATURDAY).atHour(20).create();
+  return { ok: true, installed: true };
+}
