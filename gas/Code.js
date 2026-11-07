@@ -55,10 +55,45 @@ function doPost(e) {
     if (r && r.__dashboard) return jsonOut_(dashboard_());
     if (r && r.__dashcheck) return jsonOut_(dashCheck_());
     if (r && r.__migrate) return jsonOut_(migrate_(r.start));
+    if (r && r.__diag) return jsonOut_(diag_());
     return jsonOut_(submitResult(r));
   } catch (err) {
     return jsonOut_({ ok: false, error: String(err) });
   }
+}
+
+/** 진단(읽기 전용, 집계만 — 이름·점수는 반환하지 않음): M열(1주차주일) 저장 형태별 행 수, 시작일별 인원 수·최종 행 수, 개요 설정 셀. 개요가 비거나 일부만 보일 때 원인 확인용 */
+function diag_() {
+  var ss = SpreadsheetApp.getActive();
+  var sh = ensureSheet_(ss);
+  var n = sh.getLastRow() - 1;
+  var out = { rows: n, startKinds: {}, peoplePerStart: {}, finalsPerStart: {}, weeksPerStart: {} };
+  if (n > 0) {
+    var v = sh.getRange(2, 1, n, NCOL).getValues();
+    var d = sh.getRange(2, 1, n, NCOL).getDisplayValues();
+    var seen = {};
+    for (var i = 0; i < n; i++) {
+      var sv = v[i][COL.start - 1];
+      var kind = (sv instanceof Date ? 'Date' : typeof sv) + ':' + d[i][COL.start - 1];
+      out.startKinds[kind] = (out.startKinds[kind] || 0) + 1;
+      var st = ymd_(sv) || '(빈칸)';
+      var key = st + '|' + String(v[i][COL.name - 1]);
+      if (!seen[key]) { seen[key] = true; out.peoplePerStart[st] = (out.peoplePerStart[st] || 0) + 1; }
+      if (v[i][COL.rep - 1] === FINAL) out.finalsPerStart[st] = (out.finalsPerStart[st] || 0) + 1;
+      var wk = String(v[i][COL.week - 1]);
+      var wm = out.weeksPerStart[st] || (out.weeksPerStart[st] = {});
+      wm[wk] = (wm[wk] || 0) + 1;
+    }
+  }
+  var dash = ss.getSheetByName(DASH_NAME);
+  if (dash) {
+    out.dash = {
+      b50: dash.getRange('B50').getDisplayValue(), b50type: typeof dash.getRange('B50').getValue(),
+      b51: dash.getRange('B51').getDisplayValue(), b52: dash.getRange('B52').getDisplayValue(),
+      listedCount: dash.getRange('A2:A41').getDisplayValues().filter(function (r) { return r[0] !== ''; }).length
+    };
+  }
+  return out;
 }
 
 /** '성적' 시트가 없으면 헤더와 함께 생성. 있으면 1행 1..14열 중 빈 헤더 칸만 채운다(마이그레이션) */
