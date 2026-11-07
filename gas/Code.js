@@ -56,6 +56,7 @@ function doPost(e) {
     if (r && r.__dashcheck) return jsonOut_(dashCheck_());
     if (r && r.__migrate) return jsonOut_(migrate_(r.start));
     if (r && r.__diag) return jsonOut_(diag_());
+    if (r && r.__rewritestart) return jsonOut_(rewriteStart_(r.from, r.to));
     return jsonOut_(submitResult(r));
   } catch (err) {
     return jsonOut_({ ok: false, error: String(err) });
@@ -139,16 +140,40 @@ function groupKey_(name, week, start) {
 }
 
 /** 현재 텀 = '성적' M열에서 가장 늦은 YYYY-MM-DD ('test' 같은 값은 제외). 없으면 '' */
+/* 현재 텀 1주차주일: 최근 20건 중 최빈값(개요 B50 수식과 같은 규칙). 최빈값이 없으면 가장 늦은 날짜 */
 function currentStart_(sh) {
   var n = sh.getLastRow() - 1;
   if (n < 1) return '';
   var vals = sh.getRange(2, COL.start, n, 1).getValues();
-  var best = '';
+  var cnt = {}, best = '', bestN = 0, latest = '';
+  var from = Math.max(0, n - 20);
   for (var i = 0; i < n; i++) {
     var s = ymd_(vals[i][0]);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s) && s > best) best = s;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) continue;
+    if (s > latest) latest = s;
+    if (i >= from) {
+      cnt[s] = (cnt[s] || 0) + 1;
+      if (cnt[s] > bestN || (cnt[s] === bestN && s > best)) { best = s; bestN = cnt[s]; }
+    }
   }
-  return best;
+  return best || latest;
+}
+
+/** 1주차주일(M) 일괄 교정: from 날짜인 행을 to로 바꾼 뒤 '최종' 표시를 다시 계산.
+ *  시작일이 다른 링크(?s=)로 제출된 행을 같은 텀으로 합칠 때 사용. doPost {__rewritestart:true, from, to} */
+function rewriteStart_(from, to) {
+  from = String(from || ''); to = String(to || '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) throw new Error('from/to 형식(YYYY-MM-DD)을 확인하세요');
+  var sh = ensureSheet_(SpreadsheetApp.getActive());
+  var n = sh.getLastRow() - 1, changed = 0;
+  if (n > 0) {
+    var rng = sh.getRange(2, COL.start, n, 1), vals = rng.getValues();
+    for (var i = 0; i < n; i++) if (ymd_(vals[i][0]) === from) { vals[i][0] = to; changed++; }
+    if (changed) rng.setValues(vals);
+  }
+  var m = migrate_(to);
+  m.changed = changed;
+  return m;
 }
 
 /** 성적 시트 단장: 앱과 같은 딥그린 톤. 여러 번 실행해도 안전(멱등) */
@@ -229,7 +254,8 @@ function dashboard_() {
   sh.getRange('A50:A53').setValues([['현재 텀 1주차 주일'], ['이번 주차'], ['이번 주 표기'], ['미제출 명단(톡방용)']])
     .setFontWeight('bold').setFontColor('#5F6A64');
   sh.getRange('B50:B53').setFormulas([
-    ['=IFERROR(INDEX(SORT(UNIQUE(FILTER(' + rel('start') + ',' + rel('start') + '<>"",ISNUMBER(' + rel('start') + '))),1,FALSE),1),"")'], // 날짜(숫자)만 — 'test' 같은 문자열 start 제외
+    /* 현재 텀 = 최근 20건 제출 중 가장 많은 1주차주일(한두 행이 다른 링크로 들어와도 휘둘리지 않음). 최빈값이 없으면 가장 늦은 날짜. 날짜(숫자)만 — 'test' 같은 문자열 start 제외 */
+    ['=IFERROR(MODE(FILTER(' + rel('start') + ',ISNUMBER(' + rel('start') + '),ROW(' + rel('start') + ')>COUNTA(' + rel('stamp') + ')+1-20)),IFERROR(INDEX(SORT(UNIQUE(FILTER(' + rel('start') + ',' + rel('start') + '<>"",ISNUMBER(' + rel('start') + '))),1,FALSE),1),""))'],
     ['=IFERROR(MAX(FILTER(' + rel('week') + ',' + rel('start') + '=B50,' + rel('rep') + '=' + Q + ')),0)'],
     ['=IF(B51>' + TOTAL_WEEKS + ',INT((B51-1)/' + TOTAL_WEEKS + ')+1&"회차 "&MOD(B51-1,' + TOTAL_WEEKS + ')+1&"주차",B51&"주차")'],
     ['=IFERROR("["&B52&" 미제출] "&TEXTJOIN(", ",TRUE,FILTER(A2:A' + LAST + ',H2:H' + LAST + '="미제출")),"미제출 없음")']
