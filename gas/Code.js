@@ -86,9 +86,19 @@ function diag_() {
       wm[wk] = (wm[wk] || 0) + 1;
     }
   }
+  /* 제출시각(A) 저장 형태와 서식 */
+  out.stampKinds = {};
+  if (n > 0) {
+    var sv2 = sh.getRange(2, COL.stamp, n, 1).getValues();
+    for (var k2 = 0; k2 < n; k2++) { var t2 = sv2[k2][0] instanceof Date ? 'Date' : typeof sv2[k2][0]; out.stampKinds[t2] = (out.stampKinds[t2] || 0) + 1; }
+    out.stampFormat = sh.getRange(2, COL.stamp).getNumberFormat();
+    out.lastStampDisplay = sh.getRange(n + 1, COL.stamp).getDisplayValue();
+  }
   var dash = ss.getSheetByName(DASH_NAME);
   if (dash) {
     out.dash = {
+      fFormat: dash.getRange('F2').getNumberFormat(),
+      fDisplay: dash.getRange('F2:F41').getDisplayValues().map(function (r) { return r[0]; }).filter(String),
       b50: dash.getRange('B50').getDisplayValue(), b50type: typeof dash.getRange('B50').getValue(),
       b51: dash.getRange('B51').getDisplayValue(), b52: dash.getRange('B52').getDisplayValue(),
       listedCount: dash.getRange('A2:A41').getDisplayValues().filter(function (r) { return r[0] !== ''; }).length
@@ -197,6 +207,7 @@ function beautify_() {
   sh.getRange('A2:' + LN).setVerticalAlignment('middle');
   [COL.week, COL.s1, COL.s2, COL.avg, COL.result, COL.code, COL.rep, COL.start, COL.ver].forEach(function (c) { colRange(c).setHorizontalAlignment('center'); });
   colRange(COL.start).setNumberFormat('yyyy-mm-dd');
+  colRange(COL.stamp).setNumberFormat('yyyy-mm-dd hh:mm'); /* 제출시각: 시트가 날짜로 저장하므로 보기 좋은 서식 고정 */
   /* 줄무늬 배경 (기존 밴딩 제거 후 열 전체에 재적용) */
   sh.getBandings().forEach(function (b) { b.remove(); });
   sh.getRange('A:' + LN)
@@ -261,6 +272,7 @@ function dashboard_() {
     ['=IFERROR("["&B52&" 미제출] "&TEXTJOIN(", ",TRUE,FILTER(A2:A' + LAST + ',H2:H' + LAST + '="미제출")),"미제출 없음")']
   ]);
   sh.getRange('B50').setNumberFormat('yyyy-mm-dd').setHorizontalAlignment('left');
+  sh.getRange('F2:F' + LAST).setNumberFormat('yyyy-mm-dd hh:mm'); /* 최근 제출: 수식 결과가 날짜값이라 서식이 없으면 일련번호로 보임 */
   sh.getRange('B51').setHorizontalAlignment('left');
   sh.getRange('A' + AREA_ROWS).setValue('※ A1:J109 영역(표·설정·차트 데이터)은 재생성 시 덮어씁니다. 차트는 L2에 놓입니다. 메모는 L열 아래쪽(L25 이하)이나 다른 시트에 적어 주세요.')
     .setFontColor('#9AA39E').setFontStyle('italic');
