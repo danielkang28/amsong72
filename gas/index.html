@@ -128,7 +128,7 @@ a{color:var(--accent)}
       <select id="testWeek"></select>
       <div id="testBody"></div>
       <button class="primary" id="btnSubmit">제출하고 채점하기</button>
-      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 본문은 띄어쓰기·문장부호를 빼고 글자 기준으로 채점하며, 장절을 비우거나 틀리면 해당 구절에서 10점 감점됩니다. 장절은 "로마서 6:23"처럼 적으세요 — 약자("롬 6:23")와 "6장 23절" 표기도 인정됩니다.</p>
+      <p class="smallmuted">시험에서는 붙여넣기가 제한됩니다. 본문은 띄어쓰기·문장부호를 빼고 글자 기준으로 채점하며, 장절을 비우거나 틀리면 해당 구절에서 10점 감점됩니다. 두 구절의 입력 순서는 상관없습니다. 장절은 "로마서 6:23"처럼 적으세요 — 약자("롬 6:23")와 "6장 23절" 표기도 인정됩니다.</p>
       <div id="formMsg"></div>
     </div>
     <div id="testResult"></div>
@@ -303,7 +303,7 @@ const CONFIG = {
   town: "",             // 마을 이름 (선택)
   officialUrl: "https://script.google.com/macros/s/AKfycbwCbl2SnhEF1fj-zf35ptta4p3bqzP1YLrb4OQdVk8GTlFtR_w7ewfGu5WZY2z1bWyt/exec" // 성적표 자동 저장이 되는 공식 주소
 };
-const APP_VERSION = "2026-10-18a"; /* 배포할 때마다 바꿈 — 푸터와 성적표 '버전' 열에 기록 */
+const APP_VERSION = "2026-11-07a"; /* 배포할 때마다 바꿈 — 푸터와 성적표 '버전' 열에 기록 */
 /* URL 파라미터 ?s= ?v= ?p= ?t= 로도 덮어쓸 수 있음. Apps Script 배포에서는 서버가 window.__QS로 주입 */
 const params = new URLSearchParams((typeof window.__QS === "string" && window.__QS) || location.search);
 const GAS = typeof google !== "undefined" && google.script && google.script.run; /* 구글시트(Apps Script) 배포 여부 */
@@ -438,15 +438,24 @@ function diffHtml(expected, typed){
   return '<h3>정답 (틀린 부분 표시)</h3><p class="diff">'+exp+'</p><h3>내 답안</h3><p class="diff">'+got+"</p>";
 }
 /* 한 주차(2구절) 채점 — DOM 접근 없는 순수 함수. 본문 점수에서 장절 오답(빈칸 포함) 시 10점 감점 */
+/* 한 구절 채점(순수 함수): 본문 점수에서 장절 오답·미입력 시 10점 감점 */
+function gradeOne(v, text, refIn){
+  const t = scoreOf(v.text, text);
+  const r = String(refIn || "").trim();
+  const refOk = refMatches(r, v.ref);
+  return { text: t, refOk: refOk, myRef: r || "(미입력)", typed: String(text || ""), s: Math.max(0, t - (refOk ? 0 : 10)) };
+}
+/* 주차 채점(순수 함수). 두 답안의 입력 순서가 바뀌어도 되도록 정방향/교차 배정 중 합계가 높은 쪽으로 채점한다(동점이면 정방향).
+   graded[k]는 wv[k] 기준이며 slot(답안이 들어온 칸 번호)과 typed(그 답안 본문)를 담는다. */
 function gradeWeek(wv, texts, refs){
-  const graded = wv.map(function(v, k){
-    const text = scoreOf(v.text, texts[k]);
-    const refIn = String(refs[k] || "").trim();
-    const refOk = refMatches(refIn, v.ref);
-    return { text: text, refOk: refOk, myRef: refIn || "(미입력)", s: Math.max(0, text - (refOk ? 0 : 10)) };
-  });
+  const straight = [gradeOne(wv[0], texts[0], refs[0]), gradeOne(wv[1], texts[1], refs[1])];
+  const crossed  = [gradeOne(wv[0], texts[1], refs[1]), gradeOne(wv[1], texts[0], refs[0])];
+  const swapped = (crossed[0].s + crossed[1].s) > (straight[0].s + straight[1].s);
+  const graded = swapped ? crossed : straight;
+  graded[0].slot = swapped ? 1 : 0;
+  graded[1].slot = swapped ? 0 : 1;
   const s1 = graded[0].s, s2 = graded[1].s;
-  return { graded: graded, s1: s1, s2: s2, avg: Math.round((s1+s2)/2), pass: s1>=PASS && s2>=PASS };
+  return { graded: graded, swapped: swapped, s1: s1, s2: s2, avg: Math.round((s1+s2)/2), pass: s1>=PASS && s2>=PASS };
 }
 
 /* ---------- 확인코드 ---------- */
@@ -549,14 +558,15 @@ const CUR = clampWeek(rawW);
 function resultCardHtml(wv, texts, g, stamp, w){
   function refLine(k){
     const r = g.graded[k];
-    return '<p class="smallmuted">본문 ' + r.text + "% · 장절 " + (r.refOk ? '<span class="pill good">정답 ✓</span>' : '<span class="pill bad">오답 −10점</span> 내 답: ' + esc(r.myRef)) + "</p>";
+    return '<p class="smallmuted">' + (g.swapped ? "(" + "①②"[r.slot] + "번 칸에 적은 답) " : "") + '본문 ' + r.text + "% · 장절 " + (r.refOk ? '<span class="pill good">정답 ✓</span>' : '<span class="pill bad">오답 −10점</span> 내 답: ' + esc(r.myRef)) + "</p>";
   }
   return '<div class="card"><h2>채점 결과</h2>'
     + '<p class="smallmuted">' + weekLabel(w) + " · " + esc(wv[0].theme) + " · " + esc(stamp) + "</p>"
     + scorebarHtml(g.avg + "%", g.pass ? "good" : "bad", g.pass ? "합격" : "불합격", "구절당 " + PASS + "% 이상이면 합격")
     + '<p class="smallmuted" id="autoSaveMsg"></p>'
-    + '<h3>① '+esc(wv[0].ref)+' — '+g.s1+'%</h3>' + refLine(0) + diffHtml(wv[0].text, texts[0])
-    + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+g.s2+'%</h3>' + refLine(1) + diffHtml(wv[1].text, texts[1])
+    + (g.swapped ? '<div class="notice">두 구절을 서로 바꿔 적으셨네요 — 각 답안을 맞는 구절에 자동으로 맞춰 채점했습니다.</div>' : "")
+    + '<h3>① '+esc(wv[0].ref)+' — '+g.s1+'%</h3>' + refLine(0) + diffHtml(wv[0].text, g.graded[0].typed)
+    + '<h3 style="margin-top:18px">② '+esc(wv[1].ref)+' — '+g.s2+'%</h3>' + refLine(1) + diffHtml(wv[1].text, g.graded[1].typed)
     + '<div class="btnrow"><button class="ghost" id="btnRetake">다시 시험 보기</button></div>'
     + '</div>';
 }
@@ -605,15 +615,16 @@ function saveToSheet(payload, getMsgEl, onDone){
   const sel = $("testWeek");
   fillWeekSelect(sel, CUR, true);
   $("testName").value = store.get("am72_name") || "";
-  const FIELDS = [["ref0","첫째 구절 장절"],["ans0","첫째 구절 본문"],["ref1","둘째 구절 장절"],["ans1","둘째 구절 본문"]];
+  const FIELDS = [["ref0","구절 1 장절"],["ans0","구절 1 본문"],["ref1","구절 2 장절"],["ans1","구절 2 본문"]];
   let submitting = false, emptyArmed = null;
   function setSubmitBtn(disabled, text){ const b = $("btnSubmit"); b.disabled = disabled; b.textContent = text; }
   function renderBody(){
     const wv = weekVerses(parseInt(sel.value,10));
     $("testBody").innerHTML = '<h3><span class="vref">주제</span> ' + esc(wv[0].theme) + "</h3>"
+      + '<p class="smallmuted">두 구절의 순서는 상관없습니다 — 각 답안을 맞는 구절에 자동으로 맞춰 채점합니다.</p>'
       + wv.map(function(v,k){
-      const ord = k===0 ? "첫째" : "둘째";
-      return '<h3>' + "①②"[k] + " " + ord + ' 구절</h3>'
+      const ord = "구절 " + (k+1);
+      return '<h3>' + "①②"[k] + " " + ord + '</h3>'
         + '<label class="label" for="ref'+k+'">장절 (필수 · 예: 로마서 6:23)</label>'
         + '<input type="text" id="ref'+k+'" class="refinput" placeholder="장절 (예: 로마서 6:23)" aria-label="'+ord+' 구절 장절" autocomplete="off">'
         + '<label class="label" for="ans'+k+'">본문</label>'
@@ -746,21 +757,31 @@ function fallbackCopy(t){
     } else if(mode === "quiz"){
       startQuiz();
     } else {
-      $("pracBody").innerHTML = wv.map(function(v,k){
-        return '<h3><span class="vref">'+esc(v.ref)+'</span> <span class="vtheme">'+esc(v.theme)+'</span></h3>'
-          + '<textarea id="pa'+k+'" placeholder="구절을 입력해 보세요"></textarea>'
+      /* 써보기: 시험과 같은 방식 — 장절은 가린 채 장절+본문을 적고, 답안에 가장 잘 맞는 구절로 채점(순서 무관) */
+      $("pracBody").innerHTML = '<h3><span class="vref">주제</span> ' + esc(wv[0].theme) + "</h3>"
+        + '<p class="smallmuted">장절과 본문을 적고 채점해 보세요. 순서는 상관없습니다 — 답안에 맞는 구절로 자동 채점합니다.</p>'
+        + wv.map(function(v,k){
+        return '<h3>' + "①②"[k] + ' 구절 ' + (k+1) + '</h3>'
+          + '<input type="text" id="pref'+k+'" class="refinput" placeholder="장절 (예: 로마서 6:23)" aria-label="구절 '+(k+1)+' 장절" autocomplete="off">'
+          + '<textarea id="pa'+k+'" placeholder="구절을 입력해 보세요" aria-label="구절 '+(k+1)+' 본문"></textarea>'
           + '<div class="btnrow"><button class="ghost" data-check="'+k+'">채점해 보기</button></div>'
           + '<div id="pr'+k+'"></div>';
       }).join("");
       document.querySelectorAll("[data-check]").forEach(function(b){
         b.addEventListener("click", function(){
-          const k = parseInt(b.dataset.check,10), v = wv[k], t = $("pa"+k).value.trim();
+          const k = parseInt(b.dataset.check,10), t = $("pa"+k).value.trim(), rIn = $("pref"+k).value.trim();
           afterKeyboard(function(){
-            const s = scoreOf(v.text, t);
-            $("pr"+k).innerHTML = scorebarHtml(s + "%", s>=PASS ? "good" : "bad", s>=PASS ? "합격권" : "더 연습") + diffHtml(v.text, t)
+            /* 이 칸의 답안에 가장 잘 맞는 구절 선택: 본문 점수 우선, 같으면 장절이 맞는 쪽, 그래도 같으면 칸 순서 */
+            const cand = wv.map(function(v){ return gradeOne(v, t, rIn); });
+            const o = k === 0 ? 1 : 0;
+            const j = (cand[o].text > cand[k].text || (cand[o].text === cand[k].text && cand[o].refOk && !cand[k].refOk)) ? o : k;
+            const v = wv[j], r = cand[j];
+            $("pr"+k).innerHTML = scorebarHtml(r.s + "%", r.s>=PASS ? "good" : "bad", r.s>=PASS ? "합격권" : "더 연습")
+              + '<p class="smallmuted">정답 장절 <b>' + esc(v.ref) + '</b> · 본문 ' + r.text + "% · 장절 " + (r.refOk ? '<span class="pill good">정답 ✓</span>' : '<span class="pill bad">오답 −10점</span> 내 답: ' + esc(r.myRef)) + "</p>"
+              + diffHtml(v.text, t)
               + '<div class="btnrow"><button class="ghost" data-again="'+k+'">다시 써보기</button></div>';
             $("pr"+k).querySelector("[data-again]").addEventListener("click", function(){
-              $("pa"+k).value = ""; $("pr"+k).innerHTML = ""; $("pa"+k).focus();
+              $("pa"+k).value = ""; $("pref"+k).value = ""; $("pr"+k).innerHTML = ""; $("pref"+k).focus();
             });
           });
         });
